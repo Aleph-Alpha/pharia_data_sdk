@@ -13,17 +13,7 @@ from pharia_sdk import Client
 @pytest.mark.asyncio
 async def test_all_get_endpoints():
     """Test all GET endpoints against the staging API."""
-
-    # Get credentials from environment variables
-    api_key = os.getenv("PHARIA_API_KEY")
-    base_url = os.getenv(
-        "PHARIA_BASE_URL", "https://pharia-data-api.stage.product.pharia.com/api/v1"
-    )
-
-    if not api_key:
-        pytest.skip("PHARIA_API_KEY environment variable not set")
-
-    client = Client(base_url=base_url, api_key=api_key)
+    client = Client()
 
     # Test 1: List Stages
     stages = await client.stages.list(page=0, size=10)
@@ -52,7 +42,3 @@ async def test_all_get_endpoints():
         stage_id = stages["stages"][0]["stageId"]
         files = await client.files.list(stage_id, page=0, size=10)
         assert "total" in files
-
-
-if __name__ == "__main__":
-    asyncio.run(test_all_get_endpoints())

@@ -14,17 +14,7 @@ from pharia_sdk import Client
 @pytest.mark.asyncio
 async def test_create_stages():
     """Test creating stages with different embedding configurations."""
-
-    # Get credentials from environment variables
-    api_key = os.getenv("PHARIA_API_KEY")
-    base_url = os.getenv(
-        "PHARIA_BASE_URL", "https://pharia-data-api.stage.product.pharia.com/api/v1"
-    )
-
-    if not api_key:
-        pytest.skip("PHARIA_API_KEY environment variable not set")
-
-    client = Client(base_url=base_url, api_key=api_key)
+    client = Client()
 
     created_stage_ids = []
 
@@ -83,7 +73,3 @@ async def test_create_stages():
             await client.stages.delete(stage_id)
         except Exception as e:
             print(f"Warning: Failed to delete test stage {stage_id}: {e}")
-
-
-if __name__ == "__main__":
-    asyncio.run(test_create_stages())
