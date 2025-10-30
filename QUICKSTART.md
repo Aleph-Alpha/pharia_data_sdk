@@ -11,8 +11,7 @@
 ## Step 1: Install
 
 ```bash
-cd pharia_sdk
-pip install -r requirements.txt
+uv add git+https://github.com/Aleph-Alpha/pharia_data_sdk.git
 ```
 
 ## Step 2: Configure
