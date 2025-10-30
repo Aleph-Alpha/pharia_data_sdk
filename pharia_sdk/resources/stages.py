@@ -425,7 +425,7 @@ class StageImports:
     Note: This is for legacy import operations. Consider using Connectors instead.
     """
 
-    client: Client
+    client: "Client"
     stage_id: str
 
     async def create(self, connection_id: str, provider: str, source: dict, **kwargs) -> dict:
