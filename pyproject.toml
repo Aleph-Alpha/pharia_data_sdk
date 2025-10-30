@@ -1,0 +1,169 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pharia-sdk"
+version = "0.1.0"
+description = "Async Python SDK for Pharia Data API with full TypedDict support"
+requires-python = ">=3.12"
+dependencies = [
+    "httpx>=0.27.0",
+    "pydantic>=2.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "pytest-cov>=6.0.0",
+    "pre-commit>=4.0.0",
+    "ruff>=0.7.0",
+    "mypy>=1.13.0",
+    "bandit[toml]>=1.8.6",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["./pharia_sdk"]
+
+[tool.ruff]
+# Enable pycodestyle (`E`) and Pyflakes (`F`) codes by default.
+# Unlike Flake8, Ruff doesn't enable pycodestyle warnings (`W`) or
+# McCabe complexity (`C901`) by default.
+target-version = "py312"
+line-length = 100
+
+# Exclude a variety of commonly ignored directories.
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "venv",
+    "scripts",
+    ]
+
+[tool.ruff.lint]
+# Enable these rule sets
+select = [
+    "E",     # pycodestyle errors
+    "W",     # pycodestyle warnings
+    "F",     # pyflakes
+    "I",     # isort
+    "N",     # pep8-naming
+    "UP",    # pyupgrade
+    "B",     # flake8-bugbear
+    "C4",    # flake8-comprehensions
+    "SIM",   # flake8-simplify
+    "TCH",   # flake8-type-checking
+    "PTH",   # flake8-use-pathlib
+    "RUF",   # Ruff-specific rules
+    "TID",   # flake8-tidy-imports
+    "ERA",   # eradicate (commented-out code)
+    "PL",    # pylint
+    "PERF",  # performance
+]
+
+# Never try to fix these violations
+unfixable = []
+
+# Allow these to be manually fixed
+fixable = ["ALL"]
+
+# Ignore these rules
+ignore = [
+    "E501",    # line too long (handled by formatter)
+    "F401",    # unused imports (keep them)
+    "F841",    # unused variables (keep them)
+    "PLR0913", # too many arguments
+    "PLR2004", # magic values
+    "PLR0912", # too many branches
+    "RUF001",  # ambiguous unicode characters (for German text)
+    "E402",    # module level import not at top (some are intentional)
+    "UP035",   # deprecated typing imports (can fix later)
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]  # Allow unused imports in __init__.py
+"**/tests/**/*" = ["PLR2004", "S101", "TID252"]  # Allow magic values, asserts in tests
+"examples/**/*" = ["ERA001", "PLR0915"]  # Allow commented code and many statements in examples
+"pharia_sdk/resources/**/*" = ["TCH001", "TCH004"]  # Models are used at runtime, not just type hints
+
+[tool.ruff.lint.isort]
+known-first-party = ["pharia_sdk"]
+force-single-line = true  # Force one import per line, no parentheses wrapping
+lines-after-imports = 2
+split-on-trailing-comma = false  # Don't split on trailing commas
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.format]
+# Use double quotes for strings.
+quote-style = "double"
+
+# Indent with spaces, rather than tabs.
+indent-style = "space"
+
+# Respect magic trailing commas.
+skip-magic-trailing-comma = true  # Don't let trailing commas trigger multi-line formatting
+
+# Automatically detect the appropriate line ending.
+line-ending = "auto"
+
+[tool.mypy]
+python_version = "3.12"
+warn_return_any = false
+warn_unused_configs = true
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+check_untyped_defs = false
+disallow_untyped_decorators = false
+no_implicit_optional = false
+warn_redundant_casts = false
+warn_unused_ignores = false
+warn_no_return = false
+warn_unreachable = false
+strict_equality = false
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false
+
+[tool.bandit]
+exclude_dirs = ["tests", ".venv", "venv", "scripts"]
+skips = ["B101", "B601", "B311"]  # B311: random module (ok for non-security use)
+
+[tool.bandit.assert_used]
+skips = ["*_test.py", "test_*.py"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+addopts = [
+    "-ra",
+    "--strict-markers",
+    "--strict-config",
+    "--showlocals",
+]
