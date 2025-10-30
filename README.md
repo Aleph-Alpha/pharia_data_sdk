@@ -31,7 +31,16 @@
 ## 📦 Installation
 
 ```bash
-pip install -r requirements.txt
+# Install directly from GitHub using uv (recommended)
+uv pip install git+https://github.com/Aleph-Alpha/pharia_data_sdk.git
+
+# Or add to your project dependencies
+uv add git+https://github.com/Aleph-Alpha/pharia_data_sdk.git
+
+# For development (clone and install)
+git clone https://github.com/Aleph-Alpha/pharia_data_sdk.git
+cd pharia_data_sdk
+uv sync
 ```
 
 ## ⚙️ Configuration
