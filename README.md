@@ -47,10 +47,10 @@ uv sync
 
 The SDK requires two environment variables:
 
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `PHARIA_DATA_API_BASE_URL` | API base URL | ✅ Yes |
-| `PHARIA_API_KEY` | API authentication key | ✅ Yes |
+| Variable | Description |
+|----------|-------------|
+| `PHARIA_DATA_API_BASE_URL` | API base URL |
+| `PHARIA_API_KEY` | API authentication key |
 
 
 ## 🚀 Quick Start
