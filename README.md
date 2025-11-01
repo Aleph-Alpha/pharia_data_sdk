@@ -227,7 +227,7 @@ python create_stages.py
 Run integration tests:
 ```bash
 # Set your API credentials
-export PHARIA_DATA_API_BASE_URL="https://<base-url>/api/v1"
+export PHARIA_DATA_API_BASE_URL="https://<base-url>"
 export PHARIA_API_KEY="your-api-key"
 
 # Run tests
