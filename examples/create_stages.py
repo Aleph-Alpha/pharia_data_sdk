@@ -32,7 +32,7 @@ async def main():
         # Example 1: Create a simple stage WITHOUT embedding
         p.section(1, 4, "Creating a simple stage (no embedding)")
         try:
-            stage = await client.stages.create(name=f"Example - Simple Stage-{uuid.uuid4()}")
+            stage = await client.v1.stages.create(name=f"Example - Simple Stage-{uuid.uuid4()}")
             p.success(
                 "SUCCESS!",
                 {
@@ -53,7 +53,7 @@ async def main():
             "When you want to provide custom instructions for embeddings",
         )
         try:
-            stage = await client.stages.instruct.create(
+            stage = await client.v1.stages.instruct.create(
                 name=f"Example - Instruct Embedding-{uuid.uuid4()}",
                 embedding_model="pharia-1-embedding-256-control",
                 instruction_document="Represent this document for retrieval",
@@ -87,7 +87,7 @@ async def main():
             "For semantic search with asymmetric/symmetric representations",
         )
         try:
-            stage = await client.stages.semantic.create(
+            stage = await client.v1.stages.semantic.create(
                 name=f"Example - Semantic Embedding-{uuid.uuid4()}",
                 embedding_model="luminous-base",
                 representation="asymmetric",  # or "symmetric"
@@ -117,7 +117,7 @@ async def main():
             4, 4, "Creating a stage with VLLM embedding", "For using VLLM-based embedding models"
         )
         try:
-            stage = await client.stages.vllm.create(
+            stage = await client.v1.stages.vllm.create(
                 name=f"Example - VLLM Embedding-{uuid.uuid4()}",
                 embedding_model="qwen3-embedding-8b",
                 hybrid_index="bm25",
@@ -147,7 +147,7 @@ async def main():
             p.info("\nCleaning up: Deleting example stages...")
             for stage_id in created_stage_ids:
                 try:
-                    await client.stages.delete(stage_id)
+                    await client.v1.stages.delete(stage_id)
                     p.success(f"Deleted stage: {stage_id}")
                 except Exception as e:
                     p.error(f"Failed to delete {stage_id}: {e}")

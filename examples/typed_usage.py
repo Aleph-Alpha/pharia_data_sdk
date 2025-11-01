@@ -14,6 +14,8 @@ from pharia import CreateConnectorInput
 from pharia import CreateRepositoryInput
 from pharia import CreateStageInput
 from pharia import DestinationConfig
+from pharia import MediaType
+from pharia import Modality
 from pharia import RetentionPolicy
 from pharia import SharepointSourceConfig
 from pharia import Trigger
@@ -46,7 +48,7 @@ async def main():
             },
         }
 
-        # stage = await client.stages.create(**stage_input)
+        # stage = await client.v1.stages.create(**stage_input)
         p.info("Type-safe stage input prepared (not executed)")
         p.info(f"Name: {stage_input['name']}", indent=1)
         p.info(f"Triggers: {len(stage_input.get('triggers', []))}", indent=1)
@@ -56,16 +58,16 @@ async def main():
 
         repo_input: CreateRepositoryInput = {
             "name": "My Repository",
-            "mediaType": "application/jsonl",
-            "modality": "text",
+            "media_type": MediaType.JSONLINES,
+            "modality": Modality.TEXT,
             "mutable": True,
         }
 
-        # repo = await client.repositories.create(repository_data=repo_input)
+        # repo = await client.v1.repositories.create(**repo_input)
         p.info("Type-safe repository input prepared (not executed)")
         p.info(f"Name: {repo_input['name']}", indent=1)
-        p.info(f"Media Type: {repo_input['mediaType']}", indent=1)
-        p.info(f"Modality: {repo_input['modality']}", indent=1)
+        p.info(f"Media Type: {repo_input['media_type'].value}", indent=1)
+        p.info(f"Modality: {repo_input['modality'].value}", indent=1)
 
         # Example 3: Create a connector with SharePoint source
         p.section(3, 5, "Creating a connector with type annotations")
@@ -85,7 +87,7 @@ async def main():
             "destination": {"type": "DataPlatform:SearchStore", "searchStore": "search-store-id"},
         }
 
-        # connector = await client.connectors.create(connector_data=connector_input)
+        # connector = await client.v1.connectors.create(connector_data=connector_input)
         p.info("Type-safe connector input prepared (not executed)")
         p.info(f"Name: {connector_input['name']}", indent=1)
         p.info(f"Mode: {connector_input['connector_mode']}", indent=1)
@@ -94,7 +96,7 @@ async def main():
         # Example 4: List stages with type-safe access
         p.section(4, 5, "Listing stages with type hints")
 
-        stages_response = await client.stages.list(page=0, size=10)
+        stages_response = await client.v1.stages.list(page=0, size=10)
 
         # Type hints help with autocomplete and type checking
         total_stages: int = stages_response["total"]
@@ -117,7 +119,7 @@ async def main():
 
         if stages:
             stage_id = stages[0]["stageId"]
-            files_response = await client.files.list(stage_id=stage_id, page=0, size=50)
+            files_response = await client.v1.files.list(stage_id=stage_id, page=0, size=50)
 
             p.success(f"Found {files_response['total']} files")
 

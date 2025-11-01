@@ -26,7 +26,7 @@ async def main():
     with ExamplePrinter("Basic Usage Examples") as p:
         # Example 1: List all stages
         p.section(1, 5, "Listing stages")
-        stages_response = await client.stages.list(page=0, size=10)
+        stages_response = await client.v1.stages.list(page=0, size=10)
         p.success(f"Found {stages_response['total']} total stages")
 
         if stages_response.get("stages"):
@@ -36,7 +36,7 @@ async def main():
 
         # Example 2: List repositories
         p.section(2, 5, "Listing repositories")
-        repos_response = await client.repositories.list(page=0, size=10)
+        repos_response = await client.v1.repositories.list(page=0, size=10)
         p.success(f"Found {repos_response['total']} total repositories")
 
         if repos_response.get("repositories"):
@@ -46,7 +46,7 @@ async def main():
 
         # Example 3: List connectors
         p.section(3, 5, "Listing connectors")
-        connectors_response = await client.connectors.list(page=0, size=10)
+        connectors_response = await client.v1.connectors.list(page=0, size=10)
         p.success(f"Found {connectors_response['total']} total connectors")
 
         if connectors_response.get("connectors"):
@@ -58,7 +58,7 @@ async def main():
         p.section(4, 5, "Getting a specific stage")
         if stages_response.get("stages") and len(stages_response["stages"]) > 0:
             stage_id = stages_response["stages"][0]["stageId"]
-            stage = await client.stages.get(stage_id)
+            stage = await client.v1.stages.get(stage_id)
             p.success(
                 f"Retrieved stage: {stage['name']}",
                 {
@@ -74,7 +74,7 @@ async def main():
         p.section(5, 5, "Listing files in a stage")
         if stages_response.get("stages") and len(stages_response["stages"]) > 0:
             stage_id = stages_response["stages"][0]["stageId"]
-            files_response = await client.files.list(stage_id, page=0, size=10)
+            files_response = await client.v1.files.list(stage_id, page=0, size=10)
             p.success(f"Found {files_response['total']} files in stage")
 
             if files_response.get("files"):
