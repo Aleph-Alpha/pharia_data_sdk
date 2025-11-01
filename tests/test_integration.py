@@ -16,29 +16,29 @@ async def test_all_get_endpoints():
     client = Client()
 
     # Test 1: List Stages
-    stages = await client.stages.list(page=0, size=10)
+    stages = await client.v1.stages.list(page=0, size=10)
     assert "total" in stages
     assert "stages" in stages
 
     # Test 2: List Repositories
-    repos = await client.repositories.list(page=0, size=10)
+    repos = await client.v1.repositories.list(page=0, size=10)
     assert "total" in repos
     assert "repositories" in repos
 
     # Test 3: List Connectors
-    connectors = await client.connectors.list(page=0, size=10)
+    connectors = await client.v1.connectors.list(page=0, size=10)
     assert "total" in connectors
     assert "connectors" in connectors
 
     # Test 4: Get a specific stage (if any exist)
     if stages.get("stages") and len(stages["stages"]) > 0:
         stage_id = stages["stages"][0]["stageId"]
-        stage = await client.stages.get(stage_id)
+        stage = await client.v1.stages.get(stage_id)
         assert stage is not None
         assert "stageId" in stage
 
     # Test 5: List files in a stage (if any exist)
     if stages.get("stages") and len(stages["stages"]) > 0:
         stage_id = stages["stages"][0]["stageId"]
-        files = await client.files.list(stage_id, page=0, size=10)
+        files = await client.v1.files.list(stage_id, page=0, size=10)
         assert "total" in files

@@ -10,10 +10,10 @@ async def test_stages_list():
 
     # Verify the client has stages property
     assert hasattr(client, "stages")
-    assert hasattr(client.stages, "list")
-    assert hasattr(client.stages, "create")
-    assert hasattr(client.stages, "get")
-    assert hasattr(client.stages, "delete")
+    assert hasattr(client.v1.stages, "list")
+    assert hasattr(client.v1.stages, "create")
+    assert hasattr(client.v1.stages, "get")
+    assert hasattr(client.v1.stages, "delete")
 
 
 @pytest.mark.asyncio
@@ -22,7 +22,7 @@ async def test_stages_create():
     client = Client(base_url="https://api.example.com", api_key="test-key")
 
     # Verify method exists and accepts required parameters
-    assert callable(client.stages.create)
+    assert callable(client.v1.stages.create)
 
 
 @pytest.mark.asyncio
@@ -31,7 +31,7 @@ async def test_stages_get():
     client = Client(base_url="https://api.example.com", api_key="test-key")
 
     # Verify method exists
-    assert callable(client.stages.get)
+    assert callable(client.v1.stages.get)
 
 
 @pytest.mark.asyncio
@@ -40,4 +40,4 @@ async def test_stages_delete():
     client = Client(base_url="https://api.example.com", api_key="test-key")
 
     # Verify method exists
-    assert callable(client.stages.delete)
+    assert callable(client.v1.stages.delete)
