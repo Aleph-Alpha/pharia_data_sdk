@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "pharia"
-version = "0.2.1"
+version = "0.3.0"
 description = "Async Python SDK for Pharia Data API with full TypedDict support"
 requires-python = ">=3.12"
 dependencies = [
@@ -108,6 +108,7 @@ ignore = [
 [tool.ruff.lint.isort]
 known-first-party = ["pharia"]
 force-single-line = true  # Force one import per line, no parentheses wrapping
+single-line-exclusions = []  # No exceptions - enforce single-line everywhere
 lines-after-imports = 2
 split-on-trailing-comma = false  # Don't split on trailing commas
 
