@@ -9,7 +9,6 @@ description = "Async Python SDK for Pharia Data API with full TypedDict support"
 requires-python = ">=3.12"
 dependencies = [
     "httpx>=0.27.0",
-    "pydantic>=2.0.0",
 ]
 
 [project.optional-dependencies]
