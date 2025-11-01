@@ -50,6 +50,8 @@ from pharia.models import File  # File types
 from pharia.models import FileListResponse
 from pharia.models import GoogleDriveSourceConfig
 from pharia.models import IngestionContext
+from pharia.models import MediaType
+from pharia.models import Modality
 from pharia.models import PaginationBase
 from pharia.models import Parameter
 from pharia.models import PresignedURL
@@ -82,8 +84,10 @@ from pharia.models import UpdateSearchStoreInput
 from pharia.models import UpdateStageInput
 from pharia.models import create_dataset_to_api
 from pharia.models import create_repository_to_api
+from pharia.models import create_search_store_to_api
 from pharia.models import create_stage_to_api
 from pharia.models import update_dataset_metadata_to_api
+from pharia.models import update_search_store_to_api
 from pharia.models import update_stage_to_api
 
 
@@ -91,6 +95,9 @@ __all__ = [
     "ChunkingStrategy",
     # Client
     "Client",
+    # Enums
+    "MediaType",
+    "Modality",
     # Connector types
     "Connector",
     "ConnectorFile",
@@ -156,4 +163,11 @@ __all__ = [
     "UpdateDatasetMetadataInput",
     "UpdateSearchStoreInput",
     "UpdateStageInput",
+    "create_dataset_to_api",
+    "create_repository_to_api",
+    "create_search_store_to_api",
+    "create_stage_to_api",
+    "update_dataset_metadata_to_api",
+    "update_search_store_to_api",
+    "update_stage_to_api",
 ]

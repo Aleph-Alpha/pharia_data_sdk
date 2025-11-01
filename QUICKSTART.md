@@ -19,7 +19,7 @@ uv add git+https://github.com/Aleph-Alpha/pharia_data_sdk.git
 Set your environment variables:
 
 ```bash
-export PHARIA_DATA_API_BASE_URL="https://<base-url>/api/v1"
+export PHARIA_DATA_API_BASE_URL="https://<base-url>"
 export PHARIA_API_KEY="your-api-key-here"
 ```
 
@@ -42,8 +42,8 @@ async def main():
     # Client automatically reads environment variables
     client = Client()
 
-    # List all stages
-    stages = await client.stages.list(page=0, size=10)
+    # List all stages (v1 API)
+    stages = await client.v1.stages.list(page=0, size=10)
     print(f"✅ Found {stages['total']} stages!")
 
     for stage in stages['stages']:

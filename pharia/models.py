@@ -5,10 +5,33 @@ These types are derived from the Go DTOs in internal/application/dtos/
 and match the actual API request/response structures.
 """
 
+from enum import Enum
 from typing import Any
 from typing import Literal
 from typing import NotRequired
 from typing import TypedDict
+
+
+# =============================================================================
+# Enums
+# =============================================================================
+
+
+class MediaType(str, Enum):
+    """Valid media types for repositories and files."""
+
+    JSONLINES = "jsonlines"
+    JSON = "json"
+    CSV = "csv"
+    PDF = "pdf"
+    AVRO = "avro"
+
+
+class Modality(str, Enum):
+    """Valid modalities for repositories."""
+
+    TEXT = "text"
+    IMAGE = "image"
 
 
 # =============================================================================
@@ -269,7 +292,7 @@ class CreateRepositoryInput(TypedDict):
     """Input for creating a repository (uses snake_case)."""
 
     name: str
-    media_type: str  # "application/jsonl" | "text/csv" | etc
+    media_type: MediaType
     modality: str  # "text" | "image" | etc
     schema: NotRequired[dict[str, Any] | None]
     mutable: NotRequired[bool]

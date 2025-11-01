@@ -65,32 +65,44 @@ async def main():
     # Client automatically reads from environment variables
     client = Client()
 
-    # List all stages
-    stages = await client.stages.list(page=0, size=10)
+    # List all stages (v1 API)
+    stages = await client.v1.stages.list(page=0, size=10)
     print(f"Found {stages['total']} stages")
 
     # Create a stage with embedding
-    stage = await client.stages.semantic.create(
+    stage = await client.v1.stages.semantic.create(
         name="My Semantic Search Stage",
         embedding_model="luminous-base",
         representation="asymmetric"
     )
 
-    # Upload files to the stage
-    files = await client.files.list(stage['stageId'])
+    # Create a search store (beta API)
+    search_store = await client.beta.search_stores.create(
+        name="My Search Store",
+        embedding_strategy={"type": "semantic", "semantic": {"model": "luminous-base", "representation": "asymmetric"}},
+        chunking_strategy={"maxChunkSizeTokens": 512, "chunkOverlapTokens": 128}
+    )
 
 asyncio.run(main())
 ```
 
-## 🎯 Core Resources
+## 🎯 API Resources
+
+### V1 API (`client.v1.*`)
 
 | Resource | Description |
 |----------|-------------|
-| `client.stages` | Create and manage data stages |
-| `client.files` | Upload and manage files |
-| `client.datasets` | Dataset operations |
-| `client.repositories` | Repository management |
-| `client.connectors` | External data connectors |
+| `client.v1.stages` | Create and manage data stages |
+| `client.v1.files` | Upload and manage files |
+| `client.v1.datasets` | Dataset operations |
+| `client.v1.repositories` | Repository management |
+| `client.v1.connectors` | External data connectors |
+
+### Beta API (`client.beta.*`)
+
+| Resource | Description |
+|----------|-------------|
+| `client.beta.search_stores` | Create and manage search stores |
 
 ## 💡 Creating Stages with Embeddings
 
@@ -100,10 +112,10 @@ The SDK provides specialized methods for different embedding types:
 client = Client()  # Reads PHARIA_DATA_API_BASE_URL and PHARIA_API_KEY from env
 
 # Simple stage (no embedding)
-stage = await client.stages.create(name="Simple Stage")
+stage = await client.v1.stages.create(name="Simple Stage")
 
 # Instruct embedding
-stage = await client.stages.instruct.create(
+stage = await client.v1.stages.instruct.create(
     name="Instruct Stage",
     embedding_model="pharia-1-embedding-256-control",
     instruction_document="Represent this document for retrieval",
@@ -111,14 +123,14 @@ stage = await client.stages.instruct.create(
 )
 
 # Semantic embedding
-stage = await client.stages.semantic.create(
+stage = await client.v1.stages.semantic.create(
     name="Semantic Stage",
     embedding_model="luminous-base",
     representation="asymmetric"
 )
 
 # VLLM embedding
-stage = await client.stages.vllm.create(
+stage = await client.v1.stages.vllm.create(
     name="VLLM Stage",
     embedding_model="qwen3-embedding-8b"
 )
@@ -142,7 +154,7 @@ stage_input: CreateStageInput = {
     }]
 }
 
-stage = await client.stages.create(**stage_input)
+stage = await client.v1.stages.create(**stage_input)
 ```
 
 All types are defined in `pharia/models.py`.

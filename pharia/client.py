@@ -8,11 +8,14 @@ from typing import Optional
 
 import httpx
 
+from pharia.resources.beta import Beta
 from pharia.resources.connectors import Connectors
 from pharia.resources.datasets import Datasets
 from pharia.resources.files import Files
 from pharia.resources.repositories import Repositories
+from pharia.resources.search_stores import SearchStores
 from pharia.resources.stages import Stages
+from pharia.resources.v1 import V1
 
 
 @dataclass
@@ -50,8 +53,7 @@ class Client:
         if not self.api_key:
             raise ValueError("Either pass an api_key parameter or set $PHARIA_API_KEY")
         self.base_url = self.base_url.rstrip("/")
-        if self.api_key:
-            self.headers["Authorization"] = f"Bearer {self.api_key}"
+        self.headers["Authorization"] = f"Bearer {self.api_key}"
 
     def with_options(
         self, api_key: str = "", timeout: float = 0.0, headers: dict[str, str] | None = None
@@ -66,25 +68,33 @@ class Client:
             headers=headers or deepcopy(self.headers),
         )
 
-    @property
-    def stages(self) -> Stages:
-        return Stages(self)
+    def with_namespace(self, namespace: str) -> "Client":
+        """Create a new client with base_url + namespace."""
+        return Client(
+            base_url=f"{self.base_url}{namespace}",
+            api_key=self.api_key,
+            timeout=self.timeout,
+            headers=deepcopy(self.headers),
+        )
 
     @property
-    def files(self) -> Files:
-        return Files(self)
+    def v1(self) -> V1:
+        """Access v1 API resources."""
+        v1_client = self.with_namespace("/api/v1")
+        return V1(
+            client=v1_client,
+            stages=Stages(v1_client),
+            files=Files(v1_client),
+            datasets=Datasets(v1_client),
+            repositories=Repositories(v1_client),
+            connectors=Connectors(v1_client),
+        )
 
     @property
-    def datasets(self) -> Datasets:
-        return Datasets(self)
-
-    @property
-    def repositories(self) -> Repositories:
-        return Repositories(self)
-
-    @property
-    def connectors(self) -> Connectors:
-        return Connectors(self)
+    def beta(self) -> Beta:
+        """Access beta API resources."""
+        beta_client = self.with_namespace("/api/beta")
+        return Beta(client=beta_client, search_stores=SearchStores(beta_client))
 
     async def request(
         self,

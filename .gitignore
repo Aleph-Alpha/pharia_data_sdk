@@ -118,3 +118,4 @@ site/
 # Backup files
 *.bak
 *.backup
+pharia-data-api
