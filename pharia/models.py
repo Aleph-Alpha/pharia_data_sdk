@@ -34,6 +34,33 @@ class Modality(str, Enum):
     IMAGE = "image"
 
 
+class TransformationName(str, Enum):
+    """Available transformation types."""
+
+    PDF_TO_TEXT = "PDFToText"
+    DOCUMENT_TO_TEXT = "DocumentToText"
+    DOCUMENT_TO_MARKDOWN = "DocumentToMarkdown"
+    PDF_TO_IMAGE = "PDFToImage"
+    DOCUMENT_TO_TEXT_BETA = "DocumentToTextBeta"
+
+
+class DestinationType(str, Enum):
+    """Valid destination types for triggers."""
+
+    DATA_PLATFORM_REPOSITORY = "DataPlatform:Repository"
+    DATA_PLATFORM_STAGE = "DataPlatform:Stage"
+    DATA_PLATFORM_SEARCH_STORE = "DataPlatform:SearchStore"
+
+
+class ConnectorType(str, Enum):
+    """Valid connector types for triggers."""
+
+    DOCUMENT_INDEX_COLLECTION = "DocumentIndex:Collection"
+    DOCUMENT_INDEX_SEARCH_STORE = "DocumentIndex:SearchStore"
+    DATA_PLATFORM_SEARCH_STORE = "DataPlatform:SearchStore"
+    DATA_PLATFORM_SEARCH_STORE_CREATE = "DataPlatform:SearchStore:CREATE"
+
+
 # =============================================================================
 # Pagination Responses
 # =============================================================================
@@ -52,8 +79,18 @@ class PaginationBase(TypedDict):
 # =============================================================================
 
 
+class TriggerInput(TypedDict):
+    """Stage trigger configuration input (uses snake_case)."""
+
+    name: str
+    transformation_name: TransformationName
+    destination_type: DestinationType
+    connector_type: NotRequired[ConnectorType | None]
+    repository_id: NotRequired[str | None]
+
+
 class Trigger(TypedDict):
-    """Stage trigger configuration."""
+    """Stage trigger configuration (API format, camelCase)."""
 
     name: str
     transformationName: str
@@ -139,10 +176,44 @@ class CreateStageInput(TypedDict):
     """Input for creating a stage (uses snake_case)."""
 
     name: str
-    triggers: NotRequired[list[Trigger]]
+    triggers: NotRequired[list[TriggerInput]]
     retention_policy: NotRequired[RetentionPolicy]
     search_store: NotRequired[CreateStageSearchStoreContext]
     access_policy: NotRequired[str]
+
+
+def convert_trigger_to_api(trigger: TriggerInput) -> Trigger:
+    """Convert TriggerInput (snake_case) to Trigger (camelCase)."""
+    transformation_name = trigger["transformation_name"]
+    destination_type = trigger["destination_type"]
+    connector_type = trigger.get("connector_type")
+
+    # Handle both enum and string values
+    transformation_value = (
+        transformation_name.value
+        if isinstance(transformation_name, TransformationName)
+        else transformation_name
+    )
+    destination_value = (
+        destination_type.value
+        if isinstance(destination_type, DestinationType)
+        else destination_type
+    )
+    connector_value = (
+        connector_type.value
+        if isinstance(connector_type, ConnectorType)
+        else connector_type
+        if connector_type
+        else None
+    )
+
+    return {
+        "name": trigger["name"],
+        "transformationName": transformation_value,
+        "destinationType": destination_value,
+        **({} if not connector_value else {"connectorType": connector_value}),
+        **({} if not trigger.get("repository_id") else {"repositoryId": trigger["repository_id"]}),
+    }
 
 
 def create_stage_to_api(data: CreateStageInput) -> dict[str, Any]:
@@ -151,9 +222,12 @@ def create_stage_to_api(data: CreateStageInput) -> dict[str, Any]:
 
     Creates a new dictionary without mutating the input.
     """
+
+    triggers = [convert_trigger_to_api(t) for t in data.get("triggers", [])]
+
     return {
         "name": data["name"],
-        **({} if "triggers" not in data else {"triggers": data["triggers"]}),
+        **({} if not triggers else {"triggers": triggers}),
         **(
             {}
             if "retention_policy" not in data

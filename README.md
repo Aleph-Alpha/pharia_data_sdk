@@ -170,16 +170,21 @@ search_store = await client.beta.search_stores.instruct.create(
 Full TypedDict support for type checking and IDE autocomplete:
 
 ```python
-from pharia import CreateStageInput, CreateRepositoryInput, MediaType, Modality
+from pharia import CreateRepositoryInput
+from pharia import CreateStageInput
+from pharia import DestinationType
+from pharia import MediaType
+from pharia import Modality
+from pharia import TransformationName
 
-# Type-safe inputs
+# Type-safe inputs (all snake_case with enums)
 stage_input: CreateStageInput = {
     "name": "My Stage",
     "triggers": [{
         "name": "my-trigger",
-        "transformationName": "text-extract",
-        "destinationType": "DataPlatform:Repository",
-        "repositoryId": "repo-id"
+        "transformation_name": TransformationName.DOCUMENT_TO_TEXT,
+        "destination_type": DestinationType.DATA_PLATFORM_REPOSITORY,
+        "repository_id": "repo-id"
     }]
 }
 

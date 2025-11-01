@@ -27,6 +27,7 @@ from pharia.models import Connector  # Connector types
 from pharia.models import ConnectorFile
 from pharia.models import ConnectorFilesListResponse
 from pharia.models import ConnectorListResponse
+from pharia.models import ConnectorType
 from pharia.models import ContentDTO
 from pharia.models import CreateConnectorInput
 from pharia.models import CreateDatasetInput
@@ -40,6 +41,7 @@ from pharia.models import Dataset  # Dataset types
 from pharia.models import DatasetListResponse
 from pharia.models import DataStorage
 from pharia.models import DestinationConfig
+from pharia.models import DestinationType
 from pharia.models import Document  # Document types
 from pharia.models import DocumentWithContents
 from pharia.models import Download  # Other types
@@ -78,7 +80,9 @@ from pharia.models import StageListResponse
 from pharia.models import StageSearchStoreContext
 from pharia.models import Transformation  # Transformation & Run types
 from pharia.models import TransformationContext
+from pharia.models import TransformationName
 from pharia.models import Trigger
+from pharia.models import TriggerInput
 from pharia.models import UpdateDatasetMetadataInput
 from pharia.models import UpdateSearchStoreInput
 from pharia.models import UpdateStageInput
@@ -96,8 +100,11 @@ __all__ = [
     # Client
     "Client",
     # Enums
+    "ConnectorType",
+    "DestinationType",
     "MediaType",
     "Modality",
+    "TransformationName",
     # Connector types
     "Connector",
     "ConnectorFile",
@@ -160,6 +167,7 @@ __all__ = [
     "Transformation",
     "TransformationContext",
     "Trigger",
+    "TriggerInput",
     "UpdateDatasetMetadataInput",
     "UpdateSearchStoreInput",
     "UpdateStageInput",
