@@ -6,7 +6,7 @@
 
 ### Modern Python SDK for the Pharia Data API
 
-*Type-safe • Async-first • Developer-friendly*
+*Type-safe • Async-first • Made for humans*
 
 ---
 
