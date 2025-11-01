@@ -77,10 +77,12 @@ async def main():
     )
 
     # Create a search store (beta API)
-    search_store = await client.beta.search_stores.create(
+    search_store = await client.beta.search_stores.semantic.create(
         name="My Search Store",
-        embedding_strategy={"type": "semantic", "semantic": {"model": "luminous-base", "representation": "asymmetric"}},
-        chunking_strategy={"maxChunkSizeTokens": 512, "chunkOverlapTokens": 128}
+        embedding_model="luminous-base",
+        representation="asymmetric",
+        max_chunk_size_tokens=512,
+        chunk_overlap_tokens=128
     )
 
 asyncio.run(main())
@@ -136,12 +138,39 @@ stage = await client.v1.stages.vllm.create(
 )
 ```
 
+## 🔍 Creating Search Stores (Beta)
+
+Search stores provide standalone semantic search capabilities:
+
+```python
+client = Client()
+
+# Semantic search store
+search_store = await client.beta.search_stores.semantic.create(
+    name="My Semantic Search Store",
+    embedding_model="luminous-base",
+    representation="asymmetric",
+    max_chunk_size_tokens=512,
+    chunk_overlap_tokens=128
+)
+
+# Instruct search store
+search_store = await client.beta.search_stores.instruct.create(
+    name="My Instruct Search Store",
+    embedding_model="pharia-1-embedding-256-control",
+    instruction_document="Represent this document for retrieval",
+    instruction_query="Represent this query for retrieval",
+    max_chunk_size_tokens=512,
+    chunk_overlap_tokens=128
+)
+```
+
 ## 🛡️ Type Safety
 
 Full TypedDict support for type checking and IDE autocomplete:
 
 ```python
-from pharia import CreateStageInput, CreateRepositoryInput
+from pharia import CreateStageInput, CreateRepositoryInput, MediaType, Modality
 
 # Type-safe inputs
 stage_input: CreateStageInput = {
@@ -155,9 +184,16 @@ stage_input: CreateStageInput = {
 }
 
 stage = await client.v1.stages.create(**stage_input)
+
+# Type-safe repository creation with enums
+repository = await client.v1.repositories.create(
+    name="My Repository",
+    media_type=MediaType.JSONLINES,
+    modality=Modality.TEXT
+)
 ```
 
-All types are defined in `pharia/models.py`.
+All types and enums are defined in `pharia/models.py`.
 
 ## 📚 Examples
 
