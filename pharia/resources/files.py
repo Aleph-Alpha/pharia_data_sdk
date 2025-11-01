@@ -65,7 +65,7 @@ class Files:
         """
         return await self.client.request("POST", f"/stages/{stage_id}/files", json=file_data)
 
-    async def get(self, stage_id: str, file_id: str) -> Any:
+    async def get(self, stage_id: str, file_id: str) -> bytes:
         """
         Download/stream a file by ID.
 
@@ -74,9 +74,9 @@ class Files:
             file_id: The file ID
 
         Returns:
-            File content (format depends on file type)
+            File content as bytes
         """
-        return await self.client.request("GET", f"/stages/{stage_id}/files/{file_id}")
+        return await self.client.request_raw("GET", f"/stages/{stage_id}/files/{file_id}")
 
     async def update(self, stage_id: str, file_id: str, file_data: dict) -> "File":
         """

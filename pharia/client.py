@@ -123,3 +123,28 @@ class Client:
                 return None
 
             return response.json()
+
+    async def request_raw(
+        self,
+        method: str,
+        path: str,
+        params: dict[str, Any] | None = None,
+        json: dict[str, Any] | None = None,
+        timeout: float = 0.0,
+    ) -> bytes:
+        """
+        Make an HTTP request to the API and return raw bytes content.
+        """
+        url = f"{self.base_url}{path}"
+        request_headers = dict(self.headers)
+        request_headers["Content-Type"] = "application/json"
+        timeout_value = timeout or self.timeout or 30.0
+
+        async with httpx.AsyncClient(timeout=timeout_value) as client:
+            response = await client.request(
+                method=method, url=url, params=params, json=json, headers=request_headers
+            )
+
+            response.raise_for_status()
+
+            return response.content
