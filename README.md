@@ -30,6 +30,14 @@
 - 📦 **Batteries included** - Stages, files, datasets, connectors, and more
 - 🔧 **Flexible** - Easy configuration and customization
 
+## ⚠️ Stability
+
+This SDK follows the same stability guarantees as the [Go programming language](https://go.dev/doc/go1compat):
+
+- **Before 1.0.0**: Breaking changes may occur between minor versions
+- **After 1.0.0**: Code that works with 1.x will continue to work with all future 1.x releases
+- Semantic versioning will be strictly followed after 1.0.0
+
 ## 📦 Installation
 
 ```bash
