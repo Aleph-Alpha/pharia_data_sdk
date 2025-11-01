@@ -4,14 +4,14 @@ from typing import Unpack
 
 
 if TYPE_CHECKING:
-    from pharia_sdk.client import Client
+    from pharia.client import Client
 
-from pharia_sdk.models import Connector
-from pharia_sdk.models import ConnectorFilesListResponse
-from pharia_sdk.models import ConnectorListResponse
-from pharia_sdk.models import CreateConnectorInput
-from pharia_sdk.models import RunListResponse
-from pharia_sdk.models import create_connector_to_api
+from pharia.models import Connector
+from pharia.models import ConnectorFilesListResponse
+from pharia.models import ConnectorListResponse
+from pharia.models import CreateConnectorInput
+from pharia.models import RunListResponse
+from pharia.models import create_connector_to_api
 
 
 @dataclass

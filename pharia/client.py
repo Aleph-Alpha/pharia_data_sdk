@@ -8,11 +8,11 @@ from typing import Optional
 
 import httpx
 
-from pharia_sdk.resources.connectors import Connectors
-from pharia_sdk.resources.datasets import Datasets
-from pharia_sdk.resources.files import Files
-from pharia_sdk.resources.repositories import Repositories
-from pharia_sdk.resources.stages import Stages
+from pharia.resources.connectors import Connectors
+from pharia.resources.datasets import Datasets
+from pharia.resources.files import Files
+from pharia.resources.repositories import Repositories
+from pharia.resources.stages import Stages
 
 
 @dataclass

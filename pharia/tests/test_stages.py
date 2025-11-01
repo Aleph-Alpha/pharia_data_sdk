@@ -1,6 +1,6 @@
 import pytest
 
-from pharia_sdk.client import Client
+from pharia.client import Client
 
 
 @pytest.mark.asyncio

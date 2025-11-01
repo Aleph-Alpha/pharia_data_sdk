@@ -9,14 +9,14 @@ import asyncio
 
 from helpers import ExamplePrinter
 
-from pharia_sdk import Client
-from pharia_sdk import CreateConnectorInput
-from pharia_sdk import CreateRepositoryInput
-from pharia_sdk import CreateStageInput
-from pharia_sdk import DestinationConfig
-from pharia_sdk import RetentionPolicy
-from pharia_sdk import SharepointSourceConfig
-from pharia_sdk import Trigger
+from pharia import Client
+from pharia import CreateConnectorInput
+from pharia import CreateRepositoryInput
+from pharia import CreateStageInput
+from pharia import DestinationConfig
+from pharia import RetentionPolicy
+from pharia import SharepointSourceConfig
+from pharia import Trigger
 
 
 async def main():

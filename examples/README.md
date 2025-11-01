@@ -19,7 +19,7 @@ Get started with common operations:
 - List files in a stage
 
 ```bash
-cd pharia_sdk/examples
+cd pharia/examples
 python basic_usage.py
 ```
 
@@ -40,7 +40,7 @@ Comprehensive guide to creating stages with different embedding types:
 Each example creates a stage and automatically cleans it up.
 
 ```bash
-cd pharia_sdk/examples
+cd pharia/examples
 python create_stages.py
 ```
 
@@ -55,7 +55,7 @@ Learn how to use TypedDict annotations for:
 - Safer, more maintainable code
 
 ```bash
-cd pharia_sdk/examples
+cd pharia/examples
 python typed_usage.py
 ```
 
@@ -79,7 +79,7 @@ The client will automatically read these values. No code changes needed!
 - ✅ Most examples are **read-only** and safe to run
 - ✅ `create_stages.py` creates resources but **auto-cleans** them
 - ✅ All examples use the **staging environment** by default
-- ✅ Install the SDK first: `pip install -e .` from `pharia_sdk/` directory
+- ✅ Install the SDK first: `uv sync` from `pharia/` directory
 
 ---
 

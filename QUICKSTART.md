@@ -36,7 +36,7 @@ python basic_usage.py
 
 ```python
 import asyncio
-from pharia_sdk import Client
+from pharia import Client
 
 async def main():
     # Client automatically reads environment variables
@@ -64,7 +64,7 @@ python my_script.py
 
 - 📚 Check out [examples/](./examples/) for more advanced usage
 - 📖 Read the [full README](./README.md) for detailed documentation
-- 🛡️ Explore [models.py](./pharia_sdk/models.py) for all available types
+- 🛡️ Explore [models.py](./pharia/models.py) for all available types
 
 ---
 

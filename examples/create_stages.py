@@ -15,7 +15,7 @@ import uuid
 
 from helpers import ExamplePrinter
 
-from pharia_sdk import Client
+from pharia import Client
 
 
 async def main():

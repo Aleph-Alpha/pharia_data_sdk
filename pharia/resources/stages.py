@@ -5,24 +5,24 @@ from typing import Unpack
 
 
 if TYPE_CHECKING:
-    from pharia_sdk.client import Client
+    from pharia.client import Client
 
-from pharia_sdk.models import CreateStageInput
-from pharia_sdk.models import CreateStageSearchStoreContext
-from pharia_sdk.models import RetentionPolicy
-from pharia_sdk.models import Stage
-from pharia_sdk.models import StageChunkingStrategy
-from pharia_sdk.models import StageEmbeddingStrategy
-from pharia_sdk.models import StageEmbeddingStrategyInstructConfig
-from pharia_sdk.models import StageEmbeddingStrategyInstruction
-from pharia_sdk.models import StageEmbeddingStrategySemanticConfig
-from pharia_sdk.models import StageEmbeddingStrategyVLLMConfig
-from pharia_sdk.models import StageListResponse
-from pharia_sdk.models import StageSearchStoreContext
-from pharia_sdk.models import Trigger
-from pharia_sdk.models import UpdateStageInput
-from pharia_sdk.models import create_stage_to_api
-from pharia_sdk.models import update_stage_to_api
+from pharia.models import CreateStageInput
+from pharia.models import CreateStageSearchStoreContext
+from pharia.models import RetentionPolicy
+from pharia.models import Stage
+from pharia.models import StageChunkingStrategy
+from pharia.models import StageEmbeddingStrategy
+from pharia.models import StageEmbeddingStrategyInstructConfig
+from pharia.models import StageEmbeddingStrategyInstruction
+from pharia.models import StageEmbeddingStrategySemanticConfig
+from pharia.models import StageEmbeddingStrategyVLLMConfig
+from pharia.models import StageListResponse
+from pharia.models import StageSearchStoreContext
+from pharia.models import Trigger
+from pharia.models import UpdateStageInput
+from pharia.models import create_stage_to_api
+from pharia.models import update_stage_to_api
 
 
 @dataclass

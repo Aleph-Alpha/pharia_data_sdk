@@ -4,12 +4,12 @@ from typing import Unpack
 
 
 if TYPE_CHECKING:
-    from pharia_sdk.client import Client
+    from pharia.client import Client
 
-from pharia_sdk.models import CreateRepositoryInput
-from pharia_sdk.models import Repository
-from pharia_sdk.models import RepositoryListResponse
-from pharia_sdk.models import create_repository_to_api
+from pharia.models import CreateRepositoryInput
+from pharia.models import Repository
+from pharia.models import RepositoryListResponse
+from pharia.models import create_repository_to_api
 
 
 @dataclass

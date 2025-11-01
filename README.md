@@ -59,7 +59,7 @@ The SDK requires two environment variables:
 
 ```python
 import asyncio
-from pharia_sdk import Client
+from pharia import Client
 
 async def main():
     # Client automatically reads from environment variables
@@ -129,7 +129,7 @@ stage = await client.stages.vllm.create(
 Full TypedDict support for type checking and IDE autocomplete:
 
 ```python
-from pharia_sdk import CreateStageInput, CreateRepositoryInput
+from pharia import CreateStageInput, CreateRepositoryInput
 
 # Type-safe inputs
 stage_input: CreateStageInput = {
@@ -145,7 +145,7 @@ stage_input: CreateStageInput = {
 stage = await client.stages.create(**stage_input)
 ```
 
-All types are defined in `pharia_sdk/models.py`.
+All types are defined in `pharia/models.py`.
 
 ## 📚 Examples
 
@@ -189,7 +189,7 @@ new_client = client.with_options(timeout=60.0)
 
 ## 📖 API Reference
 
-See [models.py](./pharia_sdk/models.py) for all available types and their fields.
+See [models.py](./pharia/models.py) for all available types and their fields.
 
 ---
 

@@ -5,14 +5,14 @@ from typing import Unpack
 
 
 if TYPE_CHECKING:
-    from pharia_sdk.client import Client
+    from pharia.client import Client
 
-from pharia_sdk.models import CreateDatasetInput
-from pharia_sdk.models import Dataset
-from pharia_sdk.models import DatasetListResponse
-from pharia_sdk.models import UpdateDatasetMetadataInput
-from pharia_sdk.models import create_dataset_to_api
-from pharia_sdk.models import update_dataset_metadata_to_api
+from pharia.models import CreateDatasetInput
+from pharia.models import Dataset
+from pharia.models import DatasetListResponse
+from pharia.models import UpdateDatasetMetadataInput
+from pharia.models import create_dataset_to_api
+from pharia.models import update_dataset_metadata_to_api
 
 
 @dataclass

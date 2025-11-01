@@ -4,11 +4,11 @@ from typing import Any
 
 
 if TYPE_CHECKING:
-    from pharia_sdk.client import Client
+    from pharia.client import Client
 
-from pharia_sdk.models import File
-from pharia_sdk.models import FileListResponse
-from pharia_sdk.models import PresignedURL
+from pharia.models import File
+from pharia.models import FileListResponse
+from pharia.models import PresignedURL
 
 
 @dataclass

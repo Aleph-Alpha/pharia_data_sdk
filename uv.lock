@@ -313,7 +313,7 @@ wheels = [
 ]
 
 [[package]]
-name = "pharia-sdk"
+name = "pharia"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [

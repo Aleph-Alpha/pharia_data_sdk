@@ -8,7 +8,7 @@ import uuid
 
 import pytest
 
-from pharia_sdk import Client
+from pharia import Client
 
 
 @pytest.mark.asyncio

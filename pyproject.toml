@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "pharia-sdk"
+name = "pharia"
 version = "0.1.0"
 description = "Async Python SDK for Pharia Data API with full TypedDict support"
 requires-python = ">=3.12"
@@ -24,7 +24,7 @@ dev = [
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["./pharia_sdk"]
+packages = ["./pharia"]
 
 [tool.ruff]
 # Enable pycodestyle (`E`) and Pyflakes (`F`) codes by default.
@@ -103,10 +103,10 @@ ignore = [
 "__init__.py" = ["F401"]  # Allow unused imports in __init__.py
 "**/tests/**/*" = ["PLR2004", "S101", "TID252"]  # Allow magic values, asserts in tests
 "examples/**/*" = ["ERA001", "PLR0915"]  # Allow commented code and many statements in examples
-"pharia_sdk/resources/**/*" = ["TCH001", "TCH004"]  # Models are used at runtime, not just type hints
+"pharia/resources/**/*" = ["TCH001", "TCH004"]  # Models are used at runtime, not just type hints
 
 [tool.ruff.lint.isort]
-known-first-party = ["pharia_sdk"]
+known-first-party = ["pharia"]
 force-single-line = true  # Force one import per line, no parentheses wrapping
 lines-after-imports = 2
 split-on-trailing-comma = false  # Don't split on trailing commas
