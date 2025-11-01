@@ -1,6 +1,6 @@
 <div align="center">
 
-# Pharia SDK
+# Pharia Data SDK
 
 ![A black and white logo for the async python pharia data sdk](./logo.png)
 
