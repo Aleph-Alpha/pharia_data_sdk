@@ -860,12 +860,28 @@ class EmbeddingStrategySemanticConfig(TypedDict):
     hybridIndex: NotRequired[str | None]  # "bm25" or None
 
 
+class EmbeddingStrategyVLLMConfig(TypedDict):
+    """VLLM embedding strategy configuration for search stores."""
+
+    model: str
+    encodingFormat: NotRequired[str | None]
+    dimensions: NotRequired[int | None]
+    instruction: NotRequired[StageEmbeddingStrategyInstruction | None]
+    hybridIndex: NotRequired[str | None]
+
+
 class EmbeddingStrategy(TypedDict):
     """Embedding strategy (oneOf pattern)."""
 
-    type: Literal["instruct", "semantic"]
+    type: Literal["instruct", "semantic", "vllm"]
+    config: NotRequired[
+        EmbeddingStrategyInstructConfig
+        | EmbeddingStrategySemanticConfig
+        | EmbeddingStrategyVLLMConfig
+    ]
     instruct: NotRequired[EmbeddingStrategyInstructConfig]
     semantic: NotRequired[EmbeddingStrategySemanticConfig]
+    vllm: NotRequired[EmbeddingStrategyVLLMConfig]
 
 
 class CreateSearchStoreInput(TypedDict):
@@ -943,6 +959,76 @@ class SearchStoreListResponse(PaginationBase):
     """Paginated search store list response."""
 
     searchStores: list[SearchStore]
+
+
+# =============================================================================
+# Search Types
+# =============================================================================
+
+
+class Cursor(TypedDict):
+    """Cursor for search result position."""
+
+    modality: str
+    item: int
+    position: NotRequired[int | None]
+
+
+class DocumentSection(TypedDict):
+    """Section of a document in search results."""
+
+    modality: str
+    text: NotRequired[str | None]
+    bytes: NotRequired[str | None]
+
+
+class SearchResult(TypedDict):
+    """Individual search result."""
+
+    documentName: str
+    section: list[DocumentSection]
+    start: Cursor
+    end: Cursor
+    score: float
+
+
+class SearchInput(TypedDict):
+    """Input for search (uses snake_case)."""
+
+    query: str
+    limit: int
+    search_type: NotRequired[str | None]
+    min_score: NotRequired[float | None]
+    filters: NotRequired[dict[str, Any] | None]
+
+
+def search_input_to_api(data: SearchInput) -> dict[str, Any]:
+    """Convert SearchInput (snake_case) to API format (camelCase)."""
+    return {
+        "query": data["query"],
+        "limit": data["limit"],
+        **({} if "search_type" not in data else {"searchType": data["search_type"]}),
+        **({} if "min_score" not in data else {"minScore": data["min_score"]}),
+        **({} if "filters" not in data else {"filters": data["filters"]}),
+    }
+
+
+class SearchResponse(TypedDict):
+    """Search response."""
+
+    results: list[SearchResult]
+
+
+class DocumentListResponse(PaginationBase):
+    """Paginated document list response."""
+
+    results: list[Document]
+
+
+class DocumentContentResponse(TypedDict):
+    """Document content response."""
+
+    contents: list[ContentDTO]
 
 
 # =============================================================================
