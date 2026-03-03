@@ -1,47 +1,102 @@
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
-from typing import Any
+from typing import overload
+
+from pharia.models import File
+from pharia.models import FileListResponse
+from pharia.models import PresignedURL
+from pharia.resources.base import gather_with_limit
 
 
 if TYPE_CHECKING:
     from pharia.client import Client
 
-from pharia.models import File
-from pharia.models import FileListResponse
-from pharia.models import PresignedURL
+
+@dataclass
+class StageFileResource:
+    """Instance-level operations for a single file in a stage."""
+
+    client: "Client"
+    stage_id: str
+    file_id: str
+
+    async def get(self) -> bytes:
+        """Download/stream this file."""
+        return await self.client.request_raw("GET", f"/stages/{self.stage_id}/files/{self.file_id}")
+
+    async def update(self, file_data: dict) -> File:
+        """Update this file."""
+        return await self.client.request(
+            "PUT", f"/stages/{self.stage_id}/files/{self.file_id}", json=file_data
+        )
+
+    async def delete(self) -> None:
+        """Delete this file."""
+        await self.client.request("DELETE", f"/stages/{self.stage_id}/files/{self.file_id}")
+
+    async def presigned_url(self, ttl: int = 3600) -> PresignedURL:
+        """Get a presigned URL for this file."""
+        params = {"ttl": ttl}
+        return await self.client.request(
+            "GET", f"/stages/{self.stage_id}/files/{self.file_id}/presigned-url", params=params
+        )
 
 
 @dataclass
-class Files:
-    """
-    Operations for /stages/{stageID}/files endpoints.
-    """
+class BatchStageFileResource:
+    """Batch operations for multiple files in a stage."""
 
     client: "Client"
+    stage_id: str
+    file_ids: list[str]
+
+    async def get(self, concurrency: int = 10) -> list[bytes]:
+        """Download multiple files concurrently."""
+        coros = [
+            self.client.request_raw("GET", f"/stages/{self.stage_id}/files/{fid}")
+            for fid in self.file_ids
+        ]
+        return await gather_with_limit(coros, concurrency)
+
+    async def delete(self, concurrency: int = 10) -> None:
+        """Delete multiple files concurrently."""
+        coros = [
+            self.client.request("DELETE", f"/stages/{self.stage_id}/files/{fid}")
+            for fid in self.file_ids
+        ]
+        await gather_with_limit(coros, concurrency)
+
+
+@dataclass
+class StageFiles:
+    """Collection-level operations for files in a stage."""
+
+    client: "Client"
+    stage_id: str
+
+    @overload
+    def __call__(self, id: str, /) -> StageFileResource: ...
+
+    @overload
+    def __call__(self, *ids: str) -> BatchStageFileResource: ...
+
+    def __call__(self, *ids: str) -> StageFileResource | BatchStageFileResource:
+        """Access a file or batch of files by ID(s)."""
+        if len(ids) == 1:
+            return StageFileResource(client=self.client, stage_id=self.stage_id, file_id=ids[0])
+        return BatchStageFileResource(
+            client=self.client, stage_id=self.stage_id, file_ids=list(ids)
+        )
 
     async def list(
         self,
-        stage_id: str,
         page: int = 0,
         size: int = 100,
         name: str = "",
         created_after: str = "",
         created_before: str = "",
-    ) -> "FileListResponse":
-        """
-        List files in a stage with pagination and filters.
-
-        Args:
-            stage_id: The stage ID
-            page: Page number (default: 0)
-            size: Page size (default: 100)
-            name: Filter by file name
-            created_after: Filter files created after this date (ISO 8601)
-            created_before: Filter files created before this date (ISO 8601)
-
-        Returns:
-            FileListResponse with page, size, total, and files list
-        """
+    ) -> FileListResponse:
+        """List files in this stage."""
         params = {
             "page": page,
             "size": size,
@@ -49,76 +104,8 @@ class Files:
             **({} if not created_after else {"createdAfter": created_after}),
             **({} if not created_before else {"createdBefore": created_before}),
         }
+        return await self.client.request("GET", f"/stages/{self.stage_id}/files", params=params)
 
-        return await self.client.request("GET", f"/stages/{stage_id}/files", params=params)
-
-    async def create(self, stage_id: str, file_data: dict) -> "File":
-        """
-        Upload a file to a stage.
-
-        Args:
-            stage_id: The stage ID
-            file_data: File data including name, mediaType, etc.
-
-        Returns:
-            Created File object
-        """
-        return await self.client.request("POST", f"/stages/{stage_id}/files", json=file_data)
-
-    async def get(self, stage_id: str, file_id: str) -> bytes:
-        """
-        Download/stream a file by ID.
-
-        Args:
-            stage_id: The stage ID
-            file_id: The file ID
-
-        Returns:
-            File content as bytes
-        """
-        return await self.client.request_raw("GET", f"/stages/{stage_id}/files/{file_id}")
-
-    async def update(self, stage_id: str, file_id: str, file_data: dict) -> "File":
-        """
-        Update a file.
-
-        Args:
-            stage_id: The stage ID
-            file_id: The file ID
-            file_data: Updated file data
-
-        Returns:
-            Updated File object
-        """
-        return await self.client.request(
-            "PUT", f"/stages/{stage_id}/files/{file_id}", json=file_data
-        )
-
-    async def delete(self, stage_id: str, file_id: str) -> None:
-        """
-        Delete a file.
-
-        Args:
-            stage_id: The stage ID
-            file_id: The file ID
-        """
-        await self.client.request("DELETE", f"/stages/{stage_id}/files/{file_id}")
-
-    async def get_presigned_url(
-        self, stage_id: str, file_id: str, ttl: int = 3600
-    ) -> "PresignedURL":
-        """
-        Get a presigned URL for a file.
-
-        Args:
-            stage_id: The stage ID
-            file_id: The file ID
-            ttl: Time to live in seconds (default: 3600)
-
-        Returns:
-            PresignedURL object with URL and expiration
-        """
-        params = {"ttl": ttl}
-        return await self.client.request(
-            "GET", f"/stages/{stage_id}/files/{file_id}/presigned-url", params=params
-        )
+    async def create(self, file_data: dict) -> File:
+        """Upload a file to this stage."""
+        return await self.client.request("POST", f"/stages/{self.stage_id}/files", json=file_data)
