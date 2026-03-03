@@ -57,7 +57,7 @@ jobs:
       run: uv sync --all-extras
 
     - name: Run Bandit
-      run: uv run bandit -r pharia_sdk/ -c pyproject.toml
+      run: uv run bandit -r pharia/ -c pyproject.toml
 
   test:
     name: Test (Python ${{ matrix.python-version }})
@@ -84,7 +84,7 @@ jobs:
       run: uv sync --all-extras
 
     - name: Run tests
-      run: uv run pytest --cov=pharia_sdk --cov-report=xml --cov-report=term || [ $? -eq 5 ] && echo "No tests found, skipping"
+      run: uv run pytest --cov=pharia --cov-report=xml --cov-report=term -x
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v5
@@ -93,6 +93,34 @@ jobs:
         file: ./coverage.xml
         fail_ci_if_error: false
         token: ${{ secrets.CODECOV_TOKEN }}
+
+  integration-test:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    needs: [lint, security, test]
+    environment: production
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v4
+      with:
+        enable-cache: true
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: Install dependencies
+      run: uv sync --all-extras
+
+    - name: Run integration tests
+      env:
+        PHARIA_DATA_API_BASE_URL: ${{ secrets.PHARIA_DATA_API_BASE_URL }}
+        PHARIA_API_KEY: ${{ secrets.PHARIA_API_KEY }}
+      run: uv run pytest tests/test_integration.py -v
 
   all-checks:
     name: All Checks Passed
