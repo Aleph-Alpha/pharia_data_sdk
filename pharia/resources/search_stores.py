@@ -258,7 +258,9 @@ class SearchStores:
             return SearchStoreResource(client=self.client, search_store_id=ids[0])
         return BatchSearchStoreResource(client=self.client, search_store_ids=list(ids))
 
-    async def list(self, page: int = 0, size: int = 100, name: str = "") -> SearchStoreListResponse:
-        """List search stores with pagination."""
-        params = {"page": page, "size": size, **({} if not name else {"name": name})}
+    async def list(self, page: int = 1, size: int = 100) -> SearchStoreListResponse:
+        """List search stores with pagination. Page is 1-based."""
+        if page < 1:
+            raise ValueError(f"page must be >= 1, got {page}")
+        params = {"page": page, "size": size}
         return await self.client.request("GET", "/search_stores", params=params)

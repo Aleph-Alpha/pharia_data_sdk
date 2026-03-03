@@ -39,7 +39,7 @@ async def main():
             metadata={"purpose": "testing", "type": "semantic"},
         )
         p.success(
-            f"Created semantic search store: {semantic_store['name']}",
+            f"Created semantic search store: {semantic_store['id']}",
             {"ID": semantic_store["id"], "Type": semantic_store["embeddingStrategy"]["type"]},
         )
         semantic_store_id = semantic_store["id"]
@@ -58,26 +58,26 @@ async def main():
             metadata={"purpose": "testing", "type": "instruct"},
         )
         p.success(
-            f"Created instruct search store: {instruct_store['name']}",
+            f"Created instruct search store: {instruct_store['id']}",
             {"ID": instruct_store["id"], "Type": instruct_store["embeddingStrategy"]["type"]},
         )
         instruct_store_id = instruct_store["id"]
 
         # Example 3: List all search stores
         p.section(3, 6, "Listing search stores")
-        search_stores_response = await client.v1.search_stores.list(page=0, size=10)
+        search_stores_response = await client.v1.search_stores.list(page=1, size=10)
         p.success(f"Found {search_stores_response['total']} total search stores")
 
-        if search_stores_response.get("searchStores"):
-            for ss in search_stores_response["searchStores"][:3]:  # Show first 3
-                p.info(f"{ss.get('name', 'unnamed')} (ID: {ss['id']})", indent=1)
+        if search_stores_response.get("results"):
+            for ss in search_stores_response["results"][:3]:  # Show first 3
+                p.info(f"ID: {ss['id']}", indent=1)
                 p.info(f"Chunks: {ss['chunkingStrategy']['maxChunkSizeTokens']} tokens", indent=2)
 
         # Example 4: Get a specific search store (fluent API)
         p.section(4, 6, "Getting a specific search store")
         retrieved_store = await client.v1.search_stores(semantic_store_id).get()
         p.success(
-            f"Retrieved search store: {retrieved_store.get('name', 'unnamed')}",
+            f"Retrieved search store: {retrieved_store['id']}",
             {
                 "ID": retrieved_store["id"],
                 "Chunking": f"{retrieved_store['chunkingStrategy']['maxChunkSizeTokens']} tokens",
@@ -102,15 +102,6 @@ async def main():
 
         await client.v1.search_stores(instruct_store_id).delete()
         p.success(f"Deleted instruct search store: {instruct_store_id}")
-
-        # Verify deletion
-        remaining_semantic = await client.v1.search_stores.list(name=unique_name_semantic)
-        remaining_instruct = await client.v1.search_stores.list(name=unique_name_instruct)
-        p.info(
-            f"Verified deletion - found {remaining_semantic['total']} semantic"
-            f" and {remaining_instruct['total']} instruct stores",
-            indent=1,
-        )
 
 
 if __name__ == "__main__":

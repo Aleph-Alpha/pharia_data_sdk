@@ -946,19 +946,18 @@ class SearchStore(TypedDict):
     """Search store response."""
 
     id: str
-    name: NotRequired[str | None]
     createdAt: str  # ISO 8601
     chunkingStrategy: ChunkingStrategy
     embeddingStrategy: EmbeddingStrategy
-    metadata: dict[str, Any]
-    metadataSchema: dict[str, str]
+    metadata: dict[str, Any] | None
+    metadataSchema: dict[str, str] | None
     retentionPolicy: NotRequired[RetentionPolicy | None]
 
 
 class SearchStoreListResponse(PaginationBase):
     """Paginated search store list response."""
 
-    searchStores: list[SearchStore]
+    results: list[SearchStore]
 
 
 # =============================================================================
