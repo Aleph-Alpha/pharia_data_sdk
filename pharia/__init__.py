@@ -72,6 +72,7 @@ from pharia.models import RepositoryListResponse
 from pharia.models import RetentionPolicy
 from pharia.models import Run
 from pharia.models import RunListResponse
+from pharia.models import SchemaVersion
 from pharia.models import SearchInput
 from pharia.models import SearchResponse
 from pharia.models import SearchResult
@@ -163,6 +164,7 @@ __all__ = [
     "RetentionPolicy",
     "Run",
     "RunListResponse",
+    "SchemaVersion",
     # Search types
     "SearchInput",
     "SearchResponse",

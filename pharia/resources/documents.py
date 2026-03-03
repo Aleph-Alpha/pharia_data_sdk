@@ -8,6 +8,7 @@ from pharia.models import Document
 from pharia.models import DocumentContentResponse
 from pharia.models import DocumentListResponse
 from pharia.models import DocumentWithContents
+from pharia.models import SchemaVersion
 from pharia.resources.base import gather_with_limit
 
 
@@ -37,12 +38,13 @@ class DocumentResource:
 
     async def create_or_update(
         self,
-        schema_version: str,
         contents: list[ContentDTO],
+        schema_version: str | SchemaVersion = SchemaVersion.V1,
         metadata: dict[str, Any] | None = None,
     ) -> DocumentWithContents:
         """Create or update this document."""
-        payload: dict[str, Any] = {"schemaVersion": schema_version, "contents": contents}
+        sv = schema_version.value if isinstance(schema_version, SchemaVersion) else schema_version
+        payload: dict[str, Any] = {"schemaVersion": sv, "contents": contents}
         if metadata is not None:
             payload["metadata"] = metadata
         return await self.client.request(

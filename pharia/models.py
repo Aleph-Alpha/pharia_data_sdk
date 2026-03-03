@@ -61,6 +61,12 @@ class ConnectorType(str, Enum):
     DATA_PLATFORM_SEARCH_STORE_CREATE = "DataPlatform:SearchStore:CREATE"
 
 
+class SchemaVersion(str, Enum):
+    """Valid schema versions for documents."""
+
+    V1 = "V1"
+
+
 # =============================================================================
 # Pagination Responses
 # =============================================================================
