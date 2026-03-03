@@ -6,6 +6,7 @@ for better IDE autocomplete and type checking.
 """
 
 import asyncio
+import uuid
 
 from examples.helpers import ExamplePrinter
 from pharia import Client
@@ -28,6 +29,9 @@ async def main():
     # - PHARIA_API_KEY
     client = Client()
 
+    created_stage_id: str | None = None
+    created_repo_id: str | None = None
+
     with ExamplePrinter("Type-Safe Usage Examples") as p:
         # Example 1: Create a stage with proper typing
         p.section(1, 5, "Creating a stage with type annotations")
@@ -39,31 +43,28 @@ async def main():
             "repository_id": "repo-123",
         }
         stage_input: CreateStageInput = {
-            "name": "My Data Stage",
+            "name": f"Example - Typed Stage-{uuid.uuid4()}",
             "triggers": [trigger],
             "retention_policy": {"retentionPeriod": 30},
         }
 
-        # stage = await client.v1.stages.create(**stage_input)
-        p.info("Type-safe stage input prepared (not executed)")
-        p.info(f"Name: {stage_input['name']}", indent=1)
-        p.info(f"Triggers: {len(stage_input.get('triggers', []))}", indent=1)
+        stage = await client.v1.stages.create(**stage_input)
+        created_stage_id = stage["stageId"]
+        p.success(f"Created stage: {stage['name']}", {"ID": created_stage_id})
 
         # Example 2: Create a repository with typing
         p.section(2, 5, "Creating a repository with type annotations")
 
         repo_input: CreateRepositoryInput = {
-            "name": "My Repository",
+            "name": f"Example - Typed Repo-{uuid.uuid4()}",
             "media_type": MediaType.JSONLINES,
             "modality": Modality.TEXT,
             "mutable": True,
         }
 
-        # repo = await client.v1.repositories.create(**repo_input)
-        p.info("Type-safe repository input prepared (not executed)")
-        p.info(f"Name: {repo_input['name']}", indent=1)
-        p.info(f"Media Type: {repo_input['media_type'].value}", indent=1)
-        p.info(f"Modality: {repo_input['modality'].value}", indent=1)
+        repo = await client.v1.repositories.create(**repo_input)
+        created_repo_id = repo["repositoryId"]
+        p.success(f"Created repository: {repo['name']}", {"ID": created_repo_id})
 
         # Example 3: Create a connector with SharePoint source
         p.section(3, 5, "Creating a connector with type annotations")
@@ -78,16 +79,16 @@ async def main():
             "connection_id": "conn-uuid-here",
             "name": "SharePoint Sync",
             "connector_mode": "SYNC",
-            "stage_id": "stage-uuid-here",
+            "stage_id": created_stage_id,
             "source": {"type": "sharepoint", "configuration": sharepoint_source},
             "destination": {"type": "DataPlatform:SearchStore", "searchStore": "search-store-id"},
         }
 
-        # connector = await client.v1.connectors.create(**connector_input)
-        p.info("Type-safe connector input prepared (not executed)")
-        p.info(f"Name: {connector_input['name']}", indent=1)
-        p.info(f"Mode: {connector_input['connector_mode']}", indent=1)
-        p.info(f"Source Type: {connector_input['source']['type']}", indent=1)
+        try:
+            connector = await client.v1.connectors.create(**connector_input)
+            p.success(f"Created connector: {connector['name']}", {"ID": connector["id"]})
+        except Exception as e:
+            p.error(f"FAILED (requires valid SharePoint connection): {e}")
 
         # Example 4: List stages with type-safe access
         p.section(4, 5, "Listing stages with type hints")
@@ -121,6 +122,15 @@ async def main():
                 p.info(f"File: {file.get('name', 'unnamed')}", indent=1)
                 p.info(f"Size: {file['size']} bytes", indent=2)
                 p.info(f"Type: {file['mediaType']}", indent=2)
+
+        # Cleanup
+        p.info("\nCleaning up...")
+        if created_stage_id:
+            await client.v1.stages(created_stage_id).delete()
+            p.success(f"Deleted stage: {created_stage_id}")
+        if created_repo_id:
+            await client.v1.repositories(created_repo_id).delete()
+            p.success(f"Deleted repository: {created_repo_id}")
 
 
 if __name__ == "__main__":
