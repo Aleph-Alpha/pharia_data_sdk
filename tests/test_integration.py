@@ -346,6 +346,117 @@ class TestDatasets:
             await client.v1.repositories(rid).delete()
 
 
+class TestBatchStageNested:
+    """E2E tests for batch stage .files and .runs fan-out."""
+
+    @pytest.mark.asyncio
+    async def test_batch_stages_files_list(self):
+        client = Client()
+        s1 = await client.v1.stages.create(name=unique("bfiles-1"))
+        s2 = await client.v1.stages.create(name=unique("bfiles-2"))
+        ids = [s1["stageId"], s2["stageId"]]
+        try:
+            results = await client.v1.stages(*ids).files.list(page=0, size=5)
+            assert len(results) == 2
+            for r in results:
+                assert "total" in r
+                assert "files" in r
+        finally:
+            await client.v1.stages(*ids).delete()
+
+    @pytest.mark.asyncio
+    async def test_batch_stages_runs_list(self):
+        client = Client()
+        s1 = await client.v1.stages.create(name=unique("bruns-1"))
+        s2 = await client.v1.stages.create(name=unique("bruns-2"))
+        ids = [s1["stageId"], s2["stageId"]]
+        try:
+            results = await client.v1.stages(*ids).runs.list(page=0, size=5)
+            assert len(results) == 2
+            for r in results:
+                assert "total" in r
+                assert "runs" in r
+        finally:
+            await client.v1.stages(*ids).delete()
+
+
+class TestBatchSearchStoreNested:
+    """E2E tests for batch search store .documents fan-out."""
+
+    @pytest.mark.asyncio
+    async def test_batch_search_stores_documents_list(self):
+        client = Client()
+        ss1 = await client.v1.search_stores.semantic.create(
+            name=unique("bdocs-ss-1"), embedding_model="luminous-base", representation="asymmetric"
+        )
+        ss2 = await client.v1.search_stores.semantic.create(
+            name=unique("bdocs-ss-2"), embedding_model="luminous-base", representation="asymmetric"
+        )
+        ids = [ss1["id"], ss2["id"]]
+        try:
+            results = await client.v1.search_stores(*ids).documents.list(page=1, size=5)
+            assert len(results) == 2
+            for r in results:
+                assert "total" in r
+                assert "results" in r
+        finally:
+            await client.v1.search_stores(*ids).delete()
+
+
+class TestBatchRepositoryNested:
+    """E2E tests for batch repository .datasets fan-out."""
+
+    @pytest.mark.asyncio
+    async def test_batch_repositories_datasets_list(self):
+        client = Client()
+        r1 = await client.v1.repositories.create(
+            name=unique("bds-repo-1"), media_type=MediaType.JSONLINES, modality="text"
+        )
+        r2 = await client.v1.repositories.create(
+            name=unique("bds-repo-2"), media_type=MediaType.JSONLINES, modality="text"
+        )
+        ids = [r1["repositoryId"], r2["repositoryId"]]
+        try:
+            results = await client.v1.repositories(*ids).datasets.list(page=0, size=5)
+            assert len(results) == 2
+            for r in results:
+                assert "total" in r
+                assert "datasets" in r
+        finally:
+            await client.v1.repositories(*ids).delete()
+
+
+class TestBatchConnectorNested:
+    """E2E tests for batch connector .files and .runs fan-out."""
+
+    @pytest.mark.asyncio
+    async def test_batch_connectors_files_list(self):
+        client = Client()
+        listing = await client.v1.connectors.list(page=0, size=2)
+        conns = listing["connectors"]
+        if len(conns) < 2:
+            pytest.skip("Need >=2 connectors for batch nested test")
+        ids = [c["id"] for c in conns[:2]]
+        results = await client.v1.connectors(*ids).files.list(page=0, size=5)
+        assert len(results) == 2
+        for r in results:
+            assert "total" in r
+
+    @pytest.mark.asyncio
+    async def test_batch_connectors_runs_list(self):
+        client = Client()
+        listing = await client.v1.connectors.list(page=0, size=2)
+        conns = listing["connectors"]
+        if len(conns) < 2:
+            pytest.skip("Need >=2 connectors for batch nested test")
+        ids = [c["id"] for c in conns[:2]]
+        results = await client.v1.connectors(*ids).runs.list(page=0, size=5)
+        assert len(results) == 2
+        for r in results:
+            assert "total" in r
+            assert "runs" in r
+
+
 class TestConnectors:
     @pytest.mark.asyncio
     async def test_list_connectors(self):
