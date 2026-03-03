@@ -5,7 +5,7 @@ These types are derived from the Go DTOs in internal/application/dtos/
 and match the actual API request/response structures.
 """
 
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 from typing import Literal
 from typing import NotRequired
@@ -17,7 +17,7 @@ from typing import TypedDict
 # =============================================================================
 
 
-class MediaType(str, Enum):
+class MediaType(StrEnum):
     """Valid media types for repositories and files."""
 
     JSONLINES = "jsonlines"
@@ -27,14 +27,14 @@ class MediaType(str, Enum):
     AVRO = "avro"
 
 
-class Modality(str, Enum):
+class Modality(StrEnum):
     """Valid modalities for repositories."""
 
     TEXT = "text"
     IMAGE = "image"
 
 
-class TransformationName(str, Enum):
+class TransformationName(StrEnum):
     """Available transformation types."""
 
     PDF_TO_TEXT = "PDFToText"
@@ -44,7 +44,7 @@ class TransformationName(str, Enum):
     DOCUMENT_TO_TEXT_BETA = "DocumentToTextBeta"
 
 
-class DestinationType(str, Enum):
+class DestinationType(StrEnum):
     """Valid destination types for triggers."""
 
     DATA_PLATFORM_REPOSITORY = "DataPlatform:Repository"
@@ -52,13 +52,19 @@ class DestinationType(str, Enum):
     DATA_PLATFORM_SEARCH_STORE = "DataPlatform:SearchStore"
 
 
-class ConnectorType(str, Enum):
+class ConnectorType(StrEnum):
     """Valid connector types for triggers."""
 
     DOCUMENT_INDEX_COLLECTION = "DocumentIndex:Collection"
     DOCUMENT_INDEX_SEARCH_STORE = "DocumentIndex:SearchStore"
     DATA_PLATFORM_SEARCH_STORE = "DataPlatform:SearchStore"
     DATA_PLATFORM_SEARCH_STORE_CREATE = "DataPlatform:SearchStore:CREATE"
+
+
+class SchemaVersion(StrEnum):
+    """Valid schema versions for documents."""
+
+    V1 = "V1"
 
 
 # =============================================================================
@@ -860,12 +866,28 @@ class EmbeddingStrategySemanticConfig(TypedDict):
     hybridIndex: NotRequired[str | None]  # "bm25" or None
 
 
+class EmbeddingStrategyVLLMConfig(TypedDict):
+    """VLLM embedding strategy configuration for search stores."""
+
+    model: str
+    encodingFormat: NotRequired[str | None]
+    dimensions: NotRequired[int | None]
+    instruction: NotRequired[StageEmbeddingStrategyInstruction | None]
+    hybridIndex: NotRequired[str | None]
+
+
 class EmbeddingStrategy(TypedDict):
     """Embedding strategy (oneOf pattern)."""
 
-    type: Literal["instruct", "semantic"]
+    type: Literal["instruct", "semantic", "vllm"]
+    config: NotRequired[
+        EmbeddingStrategyInstructConfig
+        | EmbeddingStrategySemanticConfig
+        | EmbeddingStrategyVLLMConfig
+    ]
     instruct: NotRequired[EmbeddingStrategyInstructConfig]
     semantic: NotRequired[EmbeddingStrategySemanticConfig]
+    vllm: NotRequired[EmbeddingStrategyVLLMConfig]
 
 
 class CreateSearchStoreInput(TypedDict):
@@ -930,19 +952,88 @@ class SearchStore(TypedDict):
     """Search store response."""
 
     id: str
-    name: NotRequired[str | None]
     createdAt: str  # ISO 8601
     chunkingStrategy: ChunkingStrategy
     embeddingStrategy: EmbeddingStrategy
-    metadata: dict[str, Any]
-    metadataSchema: dict[str, str]
+    metadata: dict[str, Any] | None
+    metadataSchema: dict[str, str] | None
     retentionPolicy: NotRequired[RetentionPolicy | None]
 
 
 class SearchStoreListResponse(PaginationBase):
     """Paginated search store list response."""
 
-    searchStores: list[SearchStore]
+    results: list[SearchStore]
+
+
+# =============================================================================
+# Search Types
+# =============================================================================
+
+
+class Cursor(TypedDict):
+    """Cursor for search result position."""
+
+    modality: str
+    item: int
+    position: NotRequired[int | None]
+
+
+class DocumentSection(TypedDict):
+    """Section of a document in search results."""
+
+    modality: str
+    text: NotRequired[str | None]
+    bytes: NotRequired[str | None]
+
+
+class SearchResult(TypedDict):
+    """Individual search result."""
+
+    documentName: str
+    section: list[DocumentSection]
+    start: Cursor
+    end: Cursor
+    score: float
+
+
+class SearchInput(TypedDict):
+    """Input for search (uses snake_case)."""
+
+    query: str
+    limit: int
+    search_type: NotRequired[str | None]
+    min_score: NotRequired[float | None]
+    filters: NotRequired[dict[str, Any] | None]
+
+
+def search_input_to_api(data: SearchInput) -> dict[str, Any]:
+    """Convert SearchInput (snake_case) to API format (camelCase)."""
+    return {
+        "query": data["query"],
+        "limit": data["limit"],
+        **({} if "search_type" not in data else {"searchType": data["search_type"]}),
+        **({} if "min_score" not in data else {"minScore": data["min_score"]}),
+        **({} if "filters" not in data else {"filters": data["filters"]}),
+    }
+
+
+class SearchResponse(TypedDict):
+    """Search response."""
+
+    results: list[SearchResult]
+
+
+class DocumentListResponse(PaginationBase):
+    """Paginated document list response."""
+
+    results: list[Document]
+
+
+class DocumentContentResponse(TypedDict):
+    """Document content response."""
+
+    contents: list[ContentDTO]
 
 
 # =============================================================================

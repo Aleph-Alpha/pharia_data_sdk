@@ -10,8 +10,7 @@ This example demonstrates the most common operations:
 
 import asyncio
 
-from helpers import ExamplePrinter
-
+from examples.helpers import ExamplePrinter
 from pharia import Client
 
 
@@ -51,14 +50,14 @@ async def main():
 
         if connectors_response.get("connectors"):
             for connector in connectors_response["connectors"][:3]:  # Show first 3
-                p.info(f"{connector['name']} (ID: {connector['connectorId']})", indent=1)
-                p.info(f"Mode: {connector.get('connectorMode', 'N/A')}", indent=2)
+                p.info(f"{connector['name']} (ID: {connector['id']})", indent=1)
+                p.info(f"Mode: {connector.get('connector_mode', 'N/A')}", indent=2)
 
-        # Example 4: Get a specific stage
+        # Example 4: Get a specific stage (fluent API)
         p.section(4, 5, "Getting a specific stage")
         if stages_response.get("stages") and len(stages_response["stages"]) > 0:
             stage_id = stages_response["stages"][0]["stageId"]
-            stage = await client.v1.stages.get(stage_id)
+            stage = await client.v1.stages(stage_id).get()
             p.success(
                 f"Retrieved stage: {stage['name']}",
                 {
@@ -70,11 +69,11 @@ async def main():
         else:
             p.warning("No stages found to demonstrate get operation")
 
-        # Example 5: List files in a stage
+        # Example 5: List files in a stage (nested fluent API)
         p.section(5, 5, "Listing files in a stage")
         if stages_response.get("stages") and len(stages_response["stages"]) > 0:
             stage_id = stages_response["stages"][0]["stageId"]
-            files_response = await client.v1.files.list(stage_id, page=0, size=10)
+            files_response = await client.v1.stages(stage_id).files.list(page=0, size=10)
             p.success(f"Found {files_response['total']} files in stage")
 
             if files_response.get("files"):

@@ -3,15 +3,10 @@ from copy import deepcopy
 from dataclasses import dataclass
 from dataclasses import field
 from typing import Any
-from typing import Dict
-from typing import Optional
 
 import httpx
 
-from pharia.resources.beta import Beta
 from pharia.resources.connectors import Connectors
-from pharia.resources.datasets import Datasets
-from pharia.resources.files import Files
 from pharia.resources.repositories import Repositories
 from pharia.resources.search_stores import SearchStores
 from pharia.resources.stages import Stages
@@ -58,9 +53,7 @@ class Client:
     def with_options(
         self, api_key: str = "", timeout: float = 0.0, headers: dict[str, str] | None = None
     ) -> "Client":
-        """
-        Create a new client with updated options.
-        """
+        """Create a new client with updated options."""
         return Client(
             base_url=self.base_url,
             api_key=api_key or self.api_key,
@@ -84,17 +77,10 @@ class Client:
         return V1(
             client=v1_client,
             stages=Stages(v1_client),
-            files=Files(v1_client),
-            datasets=Datasets(v1_client),
             repositories=Repositories(v1_client),
             connectors=Connectors(v1_client),
+            search_stores=SearchStores(v1_client),
         )
-
-    @property
-    def beta(self) -> Beta:
-        """Access beta API resources."""
-        beta_client = self.with_namespace("/api/beta")
-        return Beta(client=beta_client, search_stores=SearchStores(beta_client))
 
     async def request(
         self,
@@ -104,9 +90,7 @@ class Client:
         json: dict[str, Any] | None = None,
         timeout: float = 0.0,
     ) -> Any:
-        """
-        Make an HTTP request to the API.
-        """
+        """Make an HTTP request to the API."""
         url = f"{self.base_url}{path}"
         request_headers = dict(self.headers)
         request_headers["Content-Type"] = "application/json"
@@ -119,7 +103,7 @@ class Client:
 
             response.raise_for_status()
 
-            if response.status_code == 204:
+            if response.status_code == 204 or not response.content:
                 return None
 
             return response.json()
@@ -132,9 +116,7 @@ class Client:
         json: dict[str, Any] | None = None,
         timeout: float = 0.0,
     ) -> bytes:
-        """
-        Make an HTTP request to the API and return raw bytes content.
-        """
+        """Make an HTTP request to the API and return raw bytes content."""
         url = f"{self.base_url}{path}"
         request_headers = dict(self.headers)
         request_headers["Content-Type"] = "application/json"

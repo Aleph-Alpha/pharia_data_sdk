@@ -13,7 +13,7 @@ Quick Start:
     >>>
     >>> async def main():
     ...     client = Client()  # Reads from environment variables
-    ...     stages = await client.stages.list()
+    ...     stages = await client.v1.stages.list()
     ...     print(f"Found {stages['total']} stages")
     >>>
     >>> asyncio.run(main())
@@ -23,7 +23,7 @@ For more examples, see the examples/ directory.
 
 from pharia.client import Client
 from pharia.models import ChunkingStrategy
-from pharia.models import Connector  # Connector types
+from pharia.models import Connector
 from pharia.models import ConnectorFile
 from pharia.models import ConnectorFilesListResponse
 from pharia.models import ConnectorListResponse
@@ -36,19 +36,24 @@ from pharia.models import CreateRepositoryInput
 from pharia.models import CreateSearchStoreInput
 from pharia.models import CreateStageInput
 from pharia.models import CreateStageSearchStoreContext
+from pharia.models import Cursor
 from pharia.models import DataObjectDTO
-from pharia.models import Dataset  # Dataset types
+from pharia.models import Dataset
 from pharia.models import DatasetListResponse
 from pharia.models import DataStorage
 from pharia.models import DestinationConfig
 from pharia.models import DestinationType
-from pharia.models import Document  # Document types
+from pharia.models import Document
+from pharia.models import DocumentContentResponse
+from pharia.models import DocumentListResponse
+from pharia.models import DocumentSection
 from pharia.models import DocumentWithContents
-from pharia.models import Download  # Other types
+from pharia.models import Download
 from pharia.models import EmbeddingStrategy
 from pharia.models import EmbeddingStrategyInstructConfig
 from pharia.models import EmbeddingStrategySemanticConfig
-from pharia.models import File  # File types
+from pharia.models import EmbeddingStrategyVLLMConfig
+from pharia.models import File
 from pharia.models import FileListResponse
 from pharia.models import GoogleDriveSourceConfig
 from pharia.models import IngestionContext
@@ -61,24 +66,26 @@ from pharia.models import QueryEngineCloseSessionResult
 from pharia.models import QueryEngineCommandResult
 from pharia.models import QueryEngineDatabaseFile
 from pharia.models import QueryEngineQueryResult
-from pharia.models import QueryEngineSession  # Query Engine types
-from pharia.models import Repository  # Repository types
+from pharia.models import QueryEngineSession
+from pharia.models import Repository
 from pharia.models import RepositoryListResponse
 from pharia.models import RetentionPolicy
 from pharia.models import Run
 from pharia.models import RunListResponse
-from pharia.models import SearchStore  # Search Store types
+from pharia.models import SchemaVersion
+from pharia.models import SearchInput
+from pharia.models import SearchResponse
+from pharia.models import SearchResult
+from pharia.models import SearchStore
 from pharia.models import SearchStoreListResponse
 from pharia.models import SharepointSourceConfig
 from pharia.models import SourceConfig
-
-# Export commonly used types for type hints
-from pharia.models import Stage  # Stage types
+from pharia.models import Stage
 from pharia.models import StageChunkingStrategy
 from pharia.models import StageEmbeddingStrategy
 from pharia.models import StageListResponse
 from pharia.models import StageSearchStoreContext
-from pharia.models import Transformation  # Transformation & Run types
+from pharia.models import Transformation
 from pharia.models import TransformationContext
 from pharia.models import TransformationName
 from pharia.models import Trigger
@@ -90,6 +97,7 @@ from pharia.models import create_dataset_to_api
 from pharia.models import create_repository_to_api
 from pharia.models import create_search_store_to_api
 from pharia.models import create_stage_to_api
+from pharia.models import search_input_to_api
 from pharia.models import update_dataset_metadata_to_api
 from pharia.models import update_search_store_to_api
 from pharia.models import update_stage_to_api
@@ -99,17 +107,13 @@ __all__ = [
     "ChunkingStrategy",
     # Client
     "Client",
-    # Enums
-    "ConnectorType",
-    "DestinationType",
-    "MediaType",
-    "Modality",
-    "TransformationName",
     # Connector types
     "Connector",
     "ConnectorFile",
     "ConnectorFilesListResponse",
     "ConnectorListResponse",
+    # Enums
+    "ConnectorType",
     "ContentDTO",
     "CreateConnectorInput",
     "CreateDatasetInput",
@@ -118,25 +122,33 @@ __all__ = [
     "CreateSearchStoreInput",
     "CreateStageInput",
     "CreateStageSearchStoreContext",
+    "Cursor",
     "DataObjectDTO",
     "DataStorage",
     # Dataset types
     "Dataset",
     "DatasetListResponse",
     "DestinationConfig",
+    "DestinationType",
     # Document types
     "Document",
+    "DocumentContentResponse",
+    "DocumentListResponse",
+    "DocumentSection",
     "DocumentWithContents",
     # Other types
     "Download",
     "EmbeddingStrategy",
     "EmbeddingStrategyInstructConfig",
     "EmbeddingStrategySemanticConfig",
+    "EmbeddingStrategyVLLMConfig",
     # File types
     "File",
     "FileListResponse",
     "GoogleDriveSourceConfig",
     "IngestionContext",
+    "MediaType",
+    "Modality",
     "PaginationBase",
     "Parameter",
     "PresignedURL",
@@ -152,6 +164,11 @@ __all__ = [
     "RetentionPolicy",
     "Run",
     "RunListResponse",
+    "SchemaVersion",
+    # Search types
+    "SearchInput",
+    "SearchResponse",
+    "SearchResult",
     # Search Store types
     "SearchStore",
     "SearchStoreListResponse",
@@ -166,6 +183,7 @@ __all__ = [
     # Transformation & Run types
     "Transformation",
     "TransformationContext",
+    "TransformationName",
     "Trigger",
     "TriggerInput",
     "UpdateDatasetMetadataInput",
@@ -175,6 +193,7 @@ __all__ = [
     "create_repository_to_api",
     "create_search_store_to_api",
     "create_stage_to_api",
+    "search_input_to_api",
     "update_dataset_metadata_to_api",
     "update_search_store_to_api",
     "update_stage_to_api",
