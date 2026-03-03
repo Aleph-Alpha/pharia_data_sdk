@@ -2,9 +2,6 @@
 Integration tests for Pharia SDK - testing against live API.
 """
 
-import asyncio
-import os
-
 import pytest
 
 from pharia import Client
@@ -33,12 +30,12 @@ async def test_all_get_endpoints():
     # Test 4: Get a specific stage (if any exist)
     if stages.get("stages") and len(stages["stages"]) > 0:
         stage_id = stages["stages"][0]["stageId"]
-        stage = await client.v1.stages.get(stage_id)
+        stage = await client.v1.stages(stage_id).get()
         assert stage is not None
         assert "stageId" in stage
 
     # Test 5: List files in a stage (if any exist)
     if stages.get("stages") and len(stages["stages"]) > 0:
         stage_id = stages["stages"][0]["stageId"]
-        files = await client.v1.files.list(stage_id, page=0, size=10)
+        files = await client.v1.stages(stage_id).files.list(page=0, size=10)
         assert "total" in files

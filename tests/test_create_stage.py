@@ -2,8 +2,6 @@
 Comprehensive test for creating stages with different embedding types.
 """
 
-import asyncio
-import os
 import uuid
 
 import pytest
@@ -19,7 +17,7 @@ async def test_create_stages():
     created_stage_ids = []
 
     # Test 1: Create stage with NO embedding (simple stage)
-    stage = await client.stages.create(
+    stage = await client.v1.stages.create(
         name=f"SDK Test - Simple Stage (No Embedding)-{uuid.uuid4()}"
     )
     assert stage["stageId"] is not None
@@ -27,7 +25,7 @@ async def test_create_stages():
     created_stage_ids.append(stage["stageId"])
 
     # Test 2: Create stage with INSTRUCT embedding
-    stage = await client.stages.instruct.create(
+    stage = await client.v1.stages.instruct.create(
         name=f"SDK Test - Instruct Embedding Stage-{uuid.uuid4()}",
         embedding_model="pharia-1-embedding-256-control",
         instruction_document="Represent this document for retrieval",
@@ -37,12 +35,15 @@ async def test_create_stages():
         chunk_overlap_tokens=128,
     )
     assert stage["stageId"] is not None
-    assert stage.get("searchStore") is not None
-    assert stage["searchStore"].get("embeddingStrategy", {}).get("type") == "instruct"
+    search_store = stage.get("searchStore")
+    assert search_store is not None
+    embedding = search_store.get("embeddingStrategy")
+    assert embedding is not None
+    assert embedding.get("type") == "instruct"
     created_stage_ids.append(stage["stageId"])
 
     # Test 3: Create stage with SEMANTIC embedding
-    stage = await client.stages.semantic.create(
+    stage = await client.v1.stages.semantic.create(
         name=f"SDK Test - Semantic Embedding Stage-{uuid.uuid4()}",
         embedding_model="luminous-base",
         representation="asymmetric",
@@ -51,12 +52,15 @@ async def test_create_stages():
         chunk_overlap_tokens=256,
     )
     assert stage["stageId"] is not None
-    assert stage.get("searchStore") is not None
-    assert stage["searchStore"].get("embeddingStrategy", {}).get("type") == "semantic"
+    search_store = stage.get("searchStore")
+    assert search_store is not None
+    embedding = search_store.get("embeddingStrategy")
+    assert embedding is not None
+    assert embedding.get("type") == "semantic"
     created_stage_ids.append(stage["stageId"])
 
     # Test 4: Create stage with VLLM embedding
-    stage = await client.stages.vllm.create(
+    stage = await client.v1.stages.vllm.create(
         name=f"SDK Test - VLLM Embedding Stage-{uuid.uuid4()}",
         embedding_model="qwen3-embedding-8b",
         hybrid_index="bm25",
@@ -70,6 +74,6 @@ async def test_create_stages():
     # Cleanup: Delete created stages
     for stage_id in created_stage_ids:
         try:
-            await client.stages.delete(stage_id)
+            await client.v1.stages(stage_id).delete()
         except Exception as e:
             print(f"Warning: Failed to delete test stage {stage_id}: {e}")
