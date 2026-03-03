@@ -1,83 +1,86 @@
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 from typing import Unpack
-
-
-if TYPE_CHECKING:
-    from pharia.client import Client
+from typing import overload
 
 from pharia.models import CreateRepositoryInput
 from pharia.models import Repository
 from pharia.models import RepositoryListResponse
 from pharia.models import create_repository_to_api
+from pharia.resources.base import gather_with_limit
+from pharia.resources.datasets import DatasetResource
+from pharia.resources.datasets import RepositoryDatasets
+
+
+if TYPE_CHECKING:
+    from pharia.client import Client
+
+
+@dataclass
+class RepositoryResource:
+    """Instance-level operations for a single repository."""
+
+    client: "Client"
+    repository_id: str
+
+    @property
+    def datasets(self) -> RepositoryDatasets:
+        """Access datasets in this repository."""
+        return RepositoryDatasets(client=self.client, repository_id=self.repository_id)
+
+    async def get(self) -> Repository:
+        """Retrieve this repository."""
+        return await self.client.request("GET", f"/repositories/{self.repository_id}")
+
+    async def delete(self) -> None:
+        """Delete this repository."""
+        await self.client.request("DELETE", f"/repositories/{self.repository_id}")
+
+
+@dataclass
+class BatchRepositoryResource:
+    """Batch operations for multiple repositories."""
+
+    client: "Client"
+    repository_ids: list[str]
+
+    async def get(self, concurrency: int = 10) -> list[Repository]:
+        """Retrieve multiple repositories concurrently."""
+        coros = [self.client.request("GET", f"/repositories/{rid}") for rid in self.repository_ids]
+        return await gather_with_limit(coros, concurrency)
+
+    async def delete(self, concurrency: int = 10) -> None:
+        """Delete multiple repositories concurrently."""
+        coros = [
+            self.client.request("DELETE", f"/repositories/{rid}") for rid in self.repository_ids
+        ]
+        await gather_with_limit(coros, concurrency)
 
 
 @dataclass
 class Repositories:
-    """
-    Operations for /repositories endpoints.
-    """
+    """Collection-level operations for /repositories endpoints."""
 
     client: "Client"
 
-    async def list(self, page: int = 0, size: int = 100) -> "RepositoryListResponse":
-        """
-        List repositories.
+    @overload
+    def __call__(self, id: str, /) -> RepositoryResource: ...
 
-        Args:
-            page: Page number (default: 0)
-            size: Page size (default: 100)
+    @overload
+    def __call__(self, *ids: str) -> BatchRepositoryResource: ...
 
-        Returns:
-            RepositoryListResponse with page, size, total, and repositories list
-        """
+    def __call__(self, *ids: str) -> RepositoryResource | BatchRepositoryResource:
+        """Access a repository or batch of repositories by ID(s)."""
+        if len(ids) == 1:
+            return RepositoryResource(client=self.client, repository_id=ids[0])
+        return BatchRepositoryResource(client=self.client, repository_ids=list(ids))
+
+    async def list(self, page: int = 0, size: int = 100) -> RepositoryListResponse:
+        """List repositories."""
         params = {"page": page, "size": size}
         return await self.client.request("GET", "/repositories", params=params)
 
-    async def create(self, **repository_data: Unpack["CreateRepositoryInput"]) -> "Repository":
-        """
-        Create a new repository.
-
-        Args:
-            **repository_data: Repository configuration matching CreateRepositoryInput (snake_case)
-                - name (required): Repository name
-                - media_type (required): Media type (e.g., "application/jsonl")
-                - modality (required): Modality (e.g., "text")
-                - schema: Optional JSON schema
-                - mutable: Whether the repository is mutable
-
-        Returns:
-            Created Repository object
-
-        Example:
-            repo = await client.repositories.create(
-                name="My Repository",
-                media_type="application/jsonl",
-                modality="text",
-                mutable=True
-            )
-        """
-        # Convert snake_case to camelCase for API (without mutating input)
+    async def create(self, **repository_data: Unpack[CreateRepositoryInput]) -> Repository:
+        """Create a new repository."""
         payload = create_repository_to_api(repository_data)
         return await self.client.request("POST", "/repositories", json=payload)
-
-    async def get(self, repository_id: str) -> "Repository":
-        """
-        Get a repository by ID.
-
-        Args:
-            repository_id: The repository ID
-
-        Returns:
-            Repository object
-        """
-        return await self.client.request("GET", f"/repositories/{repository_id}")
-
-    async def delete(self, repository_id: str) -> None:
-        """
-        Delete a repository.
-
-        Args:
-            repository_id: The repository ID
-        """
-        await self.client.request("DELETE", f"/repositories/{repository_id}")
