@@ -5,7 +5,7 @@ These types are derived from the Go DTOs in internal/application/dtos/
 and match the actual API request/response structures.
 """
 
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 from typing import Literal
 from typing import NotRequired
@@ -17,7 +17,7 @@ from typing import TypedDict
 # =============================================================================
 
 
-class MediaType(str, Enum):
+class MediaType(StrEnum):
     """Valid media types for repositories and files."""
 
     JSONLINES = "jsonlines"
@@ -27,14 +27,14 @@ class MediaType(str, Enum):
     AVRO = "avro"
 
 
-class Modality(str, Enum):
+class Modality(StrEnum):
     """Valid modalities for repositories."""
 
     TEXT = "text"
     IMAGE = "image"
 
 
-class TransformationName(str, Enum):
+class TransformationName(StrEnum):
     """Available transformation types."""
 
     PDF_TO_TEXT = "PDFToText"
@@ -44,7 +44,7 @@ class TransformationName(str, Enum):
     DOCUMENT_TO_TEXT_BETA = "DocumentToTextBeta"
 
 
-class DestinationType(str, Enum):
+class DestinationType(StrEnum):
     """Valid destination types for triggers."""
 
     DATA_PLATFORM_REPOSITORY = "DataPlatform:Repository"
@@ -52,7 +52,7 @@ class DestinationType(str, Enum):
     DATA_PLATFORM_SEARCH_STORE = "DataPlatform:SearchStore"
 
 
-class ConnectorType(str, Enum):
+class ConnectorType(StrEnum):
     """Valid connector types for triggers."""
 
     DOCUMENT_INDEX_COLLECTION = "DocumentIndex:Collection"
@@ -61,7 +61,7 @@ class ConnectorType(str, Enum):
     DATA_PLATFORM_SEARCH_STORE_CREATE = "DataPlatform:SearchStore:CREATE"
 
 
-class SchemaVersion(str, Enum):
+class SchemaVersion(StrEnum):
     """Valid schema versions for documents."""
 
     V1 = "V1"
