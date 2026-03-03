@@ -36,9 +36,9 @@ class Client:
     """
 
     base_url: str = ""
-    api_key: str = ""
+    api_key: str = field(default="", repr=False)
     timeout: float = 600.0
-    headers: dict[str, str] = field(default_factory=dict)
+    headers: dict[str, str] = field(default_factory=dict, repr=False)
 
     def __post_init__(self):
         self.base_url = self.base_url or os.getenv("PHARIA_DATA_API_BASE_URL", "")
