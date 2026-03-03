@@ -7,6 +7,7 @@ from typing import overload
 from pharia.models import CreateSearchStoreInput
 from pharia.models import EmbeddingStrategyVLLMConfig
 from pharia.models import RetentionPolicy
+from pharia.models import SearchFilter
 from pharia.models import SearchResponse
 from pharia.models import SearchStore
 from pharia.models import SearchStoreListResponse
@@ -56,7 +57,7 @@ class SearchStoreResource:
         limit: int = 10,
         search_type: str | None = None,
         min_score: float | None = None,
-        filters: dict[str, Any] | None = None,
+        filters: list[SearchFilter] | None = None,
     ) -> SearchResponse:
         """Search this search store."""
         payload = search_input_to_api(

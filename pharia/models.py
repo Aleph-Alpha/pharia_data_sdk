@@ -11,6 +11,8 @@ from typing import Literal
 from typing import NotRequired
 from typing import TypedDict
 
+from pharia.utils import convert_keys_to_camel_case
+
 
 # =============================================================================
 # Enums
@@ -997,6 +999,54 @@ class SearchResult(TypedDict):
     score: float
 
 
+class MetadataFilterCondition(TypedDict, total=False):
+    """Condition for a metadata filter (exactly one key should be set)."""
+
+    greater_than: float
+    greater_than_or_equal_to: float
+    less_than: float
+    less_than_or_equal_to: float
+    after: str
+    at_or_after: str
+    before: str
+    at_or_before: str
+    equal_to: str | int | bool
+    is_null: Literal[True]
+
+
+class MetadataFilter(MetadataFilterCondition):
+    """A metadata filter with a field name and a condition."""
+
+    field: str
+
+
+class ModalityFilter(TypedDict):
+    """A modality filter condition."""
+
+    modality: str
+
+
+FilterCondition = ModalityFilter | MetadataFilter
+
+
+WithFilter = TypedDict("WithFilter", {"with": list[FilterCondition]})
+
+
+class WithOneOfFilter(TypedDict):
+    """At least one condition must match (OR)."""
+
+    with_one_of: list[FilterCondition]
+
+
+class WithoutFilter(TypedDict):
+    """None of the conditions must match (NOT)."""
+
+    without: list[FilterCondition]
+
+
+SearchFilter = WithFilter | WithOneOfFilter | WithoutFilter
+
+
 class SearchInput(TypedDict):
     """Input for search (uses snake_case)."""
 
@@ -1004,7 +1054,7 @@ class SearchInput(TypedDict):
     limit: int
     search_type: NotRequired[str | None]
     min_score: NotRequired[float | None]
-    filters: NotRequired[dict[str, Any] | None]
+    filters: NotRequired[list[SearchFilter] | None]
 
 
 def search_input_to_api(data: SearchInput) -> dict[str, Any]:
@@ -1014,7 +1064,11 @@ def search_input_to_api(data: SearchInput) -> dict[str, Any]:
         "limit": data["limit"],
         **({} if "search_type" not in data else {"searchType": data["search_type"]}),
         **({} if "min_score" not in data else {"minScore": data["min_score"]}),
-        **({} if "filters" not in data else {"filters": data["filters"]}),
+        **(
+            {}
+            if "filters" not in data or data["filters"] is None
+            else {"filters": [convert_keys_to_camel_case(dict(f)) for f in data["filters"]]}
+        ),
     }
 
 
