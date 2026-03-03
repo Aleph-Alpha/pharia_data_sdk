@@ -18,6 +18,7 @@ from pharia.models import UpdateStageInput
 from pharia.models import create_stage_to_api
 from pharia.models import update_stage_to_api
 from pharia.resources.base import gather_with_limit
+from pharia.resources.files import BatchStageFiles
 from pharia.resources.files import StageFiles
 
 
@@ -36,6 +37,24 @@ class StageRuns:
         """List runs for a stage."""
         params = {"page": page, "size": size, **({} if not status else {"status": status})}
         return await self.client.request("GET", f"/stages/{self.stage_id}/runs", params=params)
+
+
+@dataclass
+class BatchStageRuns:
+    """Batch list operations for runs across multiple stages."""
+
+    client: "Client"
+    stage_ids: list[str]
+
+    async def list(
+        self, page: int = 0, size: int = 100, status: str = "", concurrency: int = 10
+    ) -> list[RunListResponse]:
+        """List runs in multiple stages concurrently."""
+        coros = [
+            StageRuns(client=self.client, stage_id=sid).list(page=page, size=size, status=status)
+            for sid in self.stage_ids
+        ]
+        return await gather_with_limit(coros, concurrency)
 
 
 @dataclass
@@ -75,6 +94,16 @@ class BatchStageResource:
 
     client: "Client"
     stage_ids: list[str]
+
+    @property
+    def files(self) -> BatchStageFiles:
+        """Access files across multiple stages."""
+        return BatchStageFiles(client=self.client, stage_ids=self.stage_ids)
+
+    @property
+    def runs(self) -> BatchStageRuns:
+        """Access runs across multiple stages."""
+        return BatchStageRuns(client=self.client, stage_ids=self.stage_ids)
 
     async def get(self, concurrency: int = 10) -> list[Stage]:
         """Retrieve multiple stages concurrently."""

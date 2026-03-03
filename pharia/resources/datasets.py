@@ -143,3 +143,33 @@ class RepositoryDatasets:
         return await self.client.request(
             "POST", f"/repositories/{self.repository_id}/datasets", json=payload
         )
+
+
+@dataclass
+class BatchRepositoryDatasets:
+    """Batch list operations for datasets across multiple repositories."""
+
+    client: "Client"
+    repository_ids: list[str]
+
+    async def list(
+        self,
+        page: int = 0,
+        size: int = 100,
+        label: list[str] | None = None,
+        created_after: str = "",
+        created_before: str = "",
+        concurrency: int = 10,
+    ) -> list[DatasetListResponse]:
+        """List datasets in multiple repositories concurrently."""
+        coros = [
+            RepositoryDatasets(client=self.client, repository_id=rid).list(
+                page=page,
+                size=size,
+                label=label,
+                created_after=created_after,
+                created_before=created_before,
+            )
+            for rid in self.repository_ids
+        ]
+        return await gather_with_limit(coros, concurrency)

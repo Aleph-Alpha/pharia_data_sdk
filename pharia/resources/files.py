@@ -109,3 +109,33 @@ class StageFiles:
     async def create(self, file_data: dict) -> File:
         """Upload a file to this stage."""
         return await self.client.request("POST", f"/stages/{self.stage_id}/files", json=file_data)
+
+
+@dataclass
+class BatchStageFiles:
+    """Batch list operations for files across multiple stages."""
+
+    client: "Client"
+    stage_ids: list[str]
+
+    async def list(
+        self,
+        page: int = 0,
+        size: int = 100,
+        name: str = "",
+        created_after: str = "",
+        created_before: str = "",
+        concurrency: int = 10,
+    ) -> list[FileListResponse]:
+        """List files in multiple stages concurrently."""
+        coros = [
+            StageFiles(client=self.client, stage_id=sid).list(
+                page=page,
+                size=size,
+                name=name,
+                created_after=created_after,
+                created_before=created_before,
+            )
+            for sid in self.stage_ids
+        ]
+        return await gather_with_limit(coros, concurrency)

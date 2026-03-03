@@ -167,3 +167,6 @@ addopts = [
     "--strict-config",
     "--showlocals",
 ]
+
+[dependency-groups]
+dev = []

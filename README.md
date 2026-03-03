@@ -84,6 +84,10 @@ async def main():
     # Batch operations
     results = await client.v1.stages("id-1", "id-2", "id-3").get(concurrency=5)
 
+    # Batch nested resources — fan out .list() across multiple parents
+    all_files = await client.v1.stages("id-1", "id-2").files.list()
+    all_runs  = await client.v1.stages("id-1", "id-2").runs.list()
+
 asyncio.run(main())
 ```
 
@@ -115,6 +119,12 @@ await client.v1.stages("stage-id").delete()
 # Batch resources
 stages = await client.v1.stages("id-1", "id-2").get()
 await client.v1.stages("id-1", "id-2").delete()
+
+# Batch nested resources — fan out .list() concurrently
+all_files = await client.v1.stages("id-1", "id-2").files.list()
+all_runs  = await client.v1.stages("id-1", "id-2").runs.list()
+all_docs  = await client.v1.search_stores("ss-1", "ss-2").documents.list()
+all_ds    = await client.v1.repositories("r-1", "r-2").datasets.list()
 
 # Nested resources
 file_content = await client.v1.stages("stage-id").files("file-id").get()

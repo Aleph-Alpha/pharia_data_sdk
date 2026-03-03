@@ -15,6 +15,7 @@ from pharia.models import create_search_store_to_api
 from pharia.models import search_input_to_api
 from pharia.models import update_search_store_to_api
 from pharia.resources.base import gather_with_limit
+from pharia.resources.documents import BatchSearchStoreDocuments
 from pharia.resources.documents import SearchStoreDocuments
 
 
@@ -78,6 +79,11 @@ class BatchSearchStoreResource:
 
     client: "Client"
     search_store_ids: list[str]
+
+    @property
+    def documents(self) -> BatchSearchStoreDocuments:
+        """Access documents across multiple search stores."""
+        return BatchSearchStoreDocuments(client=self.client, search_store_ids=self.search_store_ids)
 
     async def get(self, concurrency: int = 10) -> list[SearchStore]:
         """Retrieve multiple search stores concurrently."""

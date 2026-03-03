@@ -47,6 +47,44 @@ class ConnectorRuns:
 
 
 @dataclass
+class BatchConnectorFiles:
+    """Batch list operations for files across multiple connectors."""
+
+    client: "Client"
+    connector_ids: list[str]
+
+    async def list(
+        self, page: int = 0, size: int = 100, concurrency: int = 10
+    ) -> list[ConnectorFilesListResponse]:
+        """List files in multiple connectors concurrently."""
+        coros = [
+            ConnectorFiles(client=self.client, connector_id=cid).list(page=page, size=size)
+            for cid in self.connector_ids
+        ]
+        return await gather_with_limit(coros, concurrency)
+
+
+@dataclass
+class BatchConnectorRuns:
+    """Batch list operations for runs across multiple connectors."""
+
+    client: "Client"
+    connector_ids: list[str]
+
+    async def list(
+        self, page: int = 0, size: int = 100, status: str = "", concurrency: int = 10
+    ) -> list[RunListResponse]:
+        """List runs in multiple connectors concurrently."""
+        coros = [
+            ConnectorRuns(client=self.client, connector_id=cid).list(
+                page=page, size=size, status=status
+            )
+            for cid in self.connector_ids
+        ]
+        return await gather_with_limit(coros, concurrency)
+
+
+@dataclass
 class ConnectorResource:
     """Instance-level operations for a single connector."""
 
@@ -78,6 +116,16 @@ class BatchConnectorResource:
 
     client: "Client"
     connector_ids: list[str]
+
+    @property
+    def files(self) -> BatchConnectorFiles:
+        """Access files across multiple connectors."""
+        return BatchConnectorFiles(client=self.client, connector_ids=self.connector_ids)
+
+    @property
+    def runs(self) -> BatchConnectorRuns:
+        """Access runs across multiple connectors."""
+        return BatchConnectorRuns(client=self.client, connector_ids=self.connector_ids)
 
     async def get(self, concurrency: int = 10) -> list[Connector]:
         """Retrieve multiple connectors concurrently."""

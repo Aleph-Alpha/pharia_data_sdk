@@ -122,3 +122,28 @@ class SearchStoreDocuments:
         return await self.client.request(
             "GET", f"/search_stores/{self.search_store_id}/documents", params=params
         )
+
+
+@dataclass
+class BatchSearchStoreDocuments:
+    """Batch list operations for documents across multiple search stores."""
+
+    client: "Client"
+    search_store_ids: list[str]
+
+    async def list(
+        self,
+        page: int = 1,
+        size: int = 100,
+        name: str = "",
+        starts_with: str = "",
+        concurrency: int = 10,
+    ) -> list[DocumentListResponse]:
+        """List documents in multiple search stores concurrently."""
+        coros = [
+            SearchStoreDocuments(client=self.client, search_store_id=sid).list(
+                page=page, size=size, name=name, starts_with=starts_with
+            )
+            for sid in self.search_store_ids
+        ]
+        return await gather_with_limit(coros, concurrency)

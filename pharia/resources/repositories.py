@@ -8,7 +8,7 @@ from pharia.models import Repository
 from pharia.models import RepositoryListResponse
 from pharia.models import create_repository_to_api
 from pharia.resources.base import gather_with_limit
-from pharia.resources.datasets import DatasetResource
+from pharia.resources.datasets import BatchRepositoryDatasets
 from pharia.resources.datasets import RepositoryDatasets
 
 
@@ -43,6 +43,11 @@ class BatchRepositoryResource:
 
     client: "Client"
     repository_ids: list[str]
+
+    @property
+    def datasets(self) -> BatchRepositoryDatasets:
+        """Access datasets across multiple repositories."""
+        return BatchRepositoryDatasets(client=self.client, repository_ids=self.repository_ids)
 
     async def get(self, concurrency: int = 10) -> list[Repository]:
         """Retrieve multiple repositories concurrently."""
