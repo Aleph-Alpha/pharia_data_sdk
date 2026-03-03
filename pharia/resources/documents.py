@@ -115,9 +115,11 @@ class SearchStoreDocuments:
         )
 
     async def list(
-        self, page: int = 0, size: int = 100, name: str = "", starts_with: str = ""
+        self, page: int = 1, size: int = 100, name: str = "", starts_with: str = ""
     ) -> DocumentListResponse:
-        """List documents in this search store."""
+        """List documents in this search store. Page is 1-based."""
+        if page < 1:
+            raise ValueError(f"page must be >= 1, got {page}")
         params = {
             "page": page,
             "size": size,
