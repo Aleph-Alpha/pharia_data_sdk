@@ -5,7 +5,6 @@ from typing import overload
 
 from pharia.models import ContentDTO
 from pharia.models import Document
-from pharia.models import DocumentContentResponse
 from pharia.models import DocumentListResponse
 from pharia.models import DocumentWithContents
 from pharia.models import SchemaVersion
@@ -30,7 +29,7 @@ class DocumentResource:
             "GET", f"/search_stores/{self.search_store_id}/documents/{self.document_name}"
         )
 
-    async def get_content(self) -> DocumentContentResponse:
+    async def get_content(self) -> list[ContentDTO]:
         """Retrieve this document's content."""
         return await self.client.request(
             "GET", f"/search_stores/{self.search_store_id}/documents/{self.document_name}/content"
@@ -51,14 +50,6 @@ class DocumentResource:
             "PUT",
             f"/search_stores/{self.search_store_id}/documents/{self.document_name}",
             json=payload,
-        )
-
-    async def update_metadata(self, metadata: dict[str, Any]) -> Document:
-        """Update this document's metadata."""
-        return await self.client.request(
-            "PATCH",
-            f"/search_stores/{self.search_store_id}/documents/{self.document_name}/metadata",
-            json=metadata,
         )
 
     async def delete(self) -> None:

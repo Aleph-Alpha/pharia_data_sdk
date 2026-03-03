@@ -187,7 +187,7 @@ doc = await client.v1.search_stores(ssid).documents("my-doc").create_or_update(
 
 # Get document metadata and content
 meta    = await client.v1.search_stores(ssid).documents("my-doc").get()
-content = await client.v1.search_stores(ssid).documents("my-doc").get_content()
+content = await client.v1.search_stores(ssid).documents("my-doc").get_content()  # list[ContentDTO]
 
 # Search
 results = await client.v1.search_stores(ssid).search(query="hello", limit=5)
