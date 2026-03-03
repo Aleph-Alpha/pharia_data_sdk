@@ -12,10 +12,31 @@ Note: This example will create and then delete stages for demonstration purposes
 
 import asyncio
 import uuid
+from typing import Any
 
-from helpers import ExamplePrinter
-
+from examples.helpers import ExamplePrinter
 from pharia import Client
+from pharia import Stage
+
+
+def _stage_details(stage: Stage, extra: dict[str, Any] | None = None) -> dict[str, Any]:
+    """Build display details for a created stage."""
+    details: dict[str, Any] = {"Stage ID": stage["stageId"], "Name": stage["name"]}
+    if extra:
+        details.update(extra)
+
+    search_store = stage.get("searchStore")
+    if search_store is None:
+        return details
+
+    details["Search Store ID"] = search_store["id"]
+
+    embedding = search_store.get("embeddingStrategy")
+    if embedding is None:
+        return details
+
+    details["Embedding Type"] = embedding.get("type")
+    return details
 
 
 async def main():
@@ -26,21 +47,14 @@ async def main():
     # - PHARIA_API_KEY
     client = Client()
 
-    created_stage_ids = []
+    created_stage_ids: list[str] = []
 
     with ExamplePrinter("Creating Stages with Different Embeddings") as p:
         # Example 1: Create a simple stage WITHOUT embedding
         p.section(1, 4, "Creating a simple stage (no embedding)")
         try:
             stage = await client.v1.stages.create(name=f"Example - Simple Stage-{uuid.uuid4()}")
-            p.success(
-                "SUCCESS!",
-                {
-                    "Stage ID": stage["stageId"],
-                    "Name": stage["name"],
-                    "Files Count": stage["filesCount"],
-                },
-            )
+            p.success("SUCCESS!", _stage_details(stage, {"Files Count": stage["filesCount"]}))
             created_stage_ids.append(stage["stageId"])
         except Exception as e:
             p.error(f"FAILED: {e}")
@@ -62,19 +76,10 @@ async def main():
                 max_chunk_size_tokens=512,
                 chunk_overlap_tokens=128,
             )
-            details = {
-                "Stage ID": stage["stageId"],
-                "Name": stage["name"],
-                "Embedding Model": "pharia-1-embedding-256-control",
-                "Chunk Size": "512 tokens",
-                "Chunk Overlap": "128 tokens",
-            }
-            if stage.get("searchStore"):
-                details["Search Store ID"] = stage["searchStore"]["id"]
-                details["Embedding Type"] = (
-                    stage["searchStore"].get("embeddingStrategy", {}).get("type")
-                )
-            p.success("SUCCESS!", details)
+            p.success(
+                "SUCCESS!",
+                _stage_details(stage, {"Chunk Size": "512 tokens", "Chunk Overlap": "128 tokens"}),
+            )
             created_stage_ids.append(stage["stageId"])
         except Exception as e:
             p.error(f"FAILED: {e}")
@@ -90,24 +95,17 @@ async def main():
             stage = await client.v1.stages.semantic.create(
                 name=f"Example - Semantic Embedding-{uuid.uuid4()}",
                 embedding_model="luminous-base",
-                representation="asymmetric",  # or "symmetric"
+                representation="asymmetric",
                 hybrid_index="bm25",
                 max_chunk_size_tokens=1024,
                 chunk_overlap_tokens=256,
             )
-            details = {
-                "Stage ID": stage["stageId"],
-                "Name": stage["name"],
-                "Embedding Model": "luminous-base",
-                "Representation": "asymmetric",
-                "Chunk Size": "1024 tokens",
-            }
-            if stage.get("searchStore"):
-                details["Search Store ID"] = stage["searchStore"]["id"]
-                details["Embedding Type"] = (
-                    stage["searchStore"].get("embeddingStrategy", {}).get("type")
-                )
-            p.success("SUCCESS!", details)
+            p.success(
+                "SUCCESS!",
+                _stage_details(
+                    stage, {"Representation": "asymmetric", "Chunk Size": "1024 tokens"}
+                ),
+            )
             created_stage_ids.append(stage["stageId"])
         except Exception as e:
             p.error(f"FAILED: {e}")
@@ -124,15 +122,7 @@ async def main():
                 max_chunk_size_tokens=2046,
                 chunk_overlap_tokens=512,
             )
-            details = {
-                "Stage ID": stage["stageId"],
-                "Name": stage["name"],
-                "Embedding Model": "qwen3-embedding-8b",
-                "Chunk Size": "2046 tokens",
-            }
-            if stage.get("searchStore"):
-                details["Search Store ID"] = stage["searchStore"]["id"]
-            p.success("SUCCESS!", details)
+            p.success("SUCCESS!", _stage_details(stage, {"Chunk Size": "2046 tokens"}))
             created_stage_ids.append(stage["stageId"])
         except Exception as e:
             p.error(f"FAILED: {e}")
@@ -140,17 +130,19 @@ async def main():
         # Summary
         p.info(f"\nCreated {len(created_stage_ids)} stages total")
 
-        if created_stage_ids:
-            p.list_items(created_stage_ids, "Created Stage IDs")
+        if not created_stage_ids:
+            return
 
-            # Cleanup
-            p.info("\nCleaning up: Deleting example stages...")
-            for stage_id in created_stage_ids:
-                try:
-                    await client.v1.stages.delete(stage_id)
-                    p.success(f"Deleted stage: {stage_id}")
-                except Exception as e:
-                    p.error(f"Failed to delete {stage_id}: {e}")
+        p.list_items(created_stage_ids, "Created Stage IDs")
+
+        # Cleanup using fluent API
+        p.info("\nCleaning up: Deleting example stages...")
+        for stage_id in created_stage_ids:
+            try:
+                await client.v1.stages(stage_id).delete()
+                p.success(f"Deleted stage: {stage_id}")
+            except Exception as e:
+                p.error(f"Failed to delete {stage_id}: {e}")
 
 
 if __name__ == "__main__":

@@ -7,18 +7,17 @@ for better IDE autocomplete and type checking.
 
 import asyncio
 
-from helpers import ExamplePrinter
-
+from examples.helpers import ExamplePrinter
 from pharia import Client
 from pharia import CreateConnectorInput
 from pharia import CreateRepositoryInput
 from pharia import CreateStageInput
-from pharia import DestinationConfig
+from pharia import DestinationType
 from pharia import MediaType
 from pharia import Modality
-from pharia import RetentionPolicy
 from pharia import SharepointSourceConfig
-from pharia import Trigger
+from pharia import TransformationName
+from pharia import TriggerInput
 
 
 async def main():
@@ -33,19 +32,16 @@ async def main():
         # Example 1: Create a stage with proper typing
         p.section(1, 5, "Creating a stage with type annotations")
 
+        trigger: TriggerInput = {
+            "name": "my-trigger",
+            "transformation_name": TransformationName.DOCUMENT_TO_TEXT,
+            "destination_type": DestinationType.DATA_PLATFORM_REPOSITORY,
+            "repository_id": "repo-123",
+        }
         stage_input: CreateStageInput = {
             "name": "My Data Stage",
-            "triggers": [
-                {
-                    "name": "my-trigger",
-                    "transformationName": "text-extract",
-                    "destinationType": "DataPlatform:Repository",
-                    "repositoryId": "repo-123",
-                }
-            ],
-            "retentionPolicy": {
-                "retentionPeriod": 30  # days
-            },
+            "triggers": [trigger],
+            "retention_policy": {"retentionPeriod": 30},
         }
 
         # stage = await client.v1.stages.create(**stage_input)
@@ -79,7 +75,7 @@ async def main():
         }
 
         connector_input: CreateConnectorInput = {
-            "connectionId": "conn-uuid-here",
+            "connection_id": "conn-uuid-here",
             "name": "SharePoint Sync",
             "connector_mode": "SYNC",
             "stage_id": "stage-uuid-here",
@@ -87,7 +83,7 @@ async def main():
             "destination": {"type": "DataPlatform:SearchStore", "searchStore": "search-store-id"},
         }
 
-        # connector = await client.v1.connectors.create(connector_data=connector_input)
+        # connector = await client.v1.connectors.create(**connector_input)
         p.info("Type-safe connector input prepared (not executed)")
         p.info(f"Name: {connector_input['name']}", indent=1)
         p.info(f"Mode: {connector_input['connector_mode']}", indent=1)
@@ -98,7 +94,6 @@ async def main():
 
         stages_response = await client.v1.stages.list(page=0, size=10)
 
-        # Type hints help with autocomplete and type checking
         total_stages: int = stages_response["total"]
         stages = stages_response["stages"]
 
@@ -110,16 +105,15 @@ async def main():
             p.info(f"Created: {stage['createdAt']}", indent=2)
             p.info(f"Files: {stage['filesCount']}", indent=2)
 
-            # Access triggers with type safety
-            for trigger in stage.get("triggers", []):
+            for trigger in stage["triggers"]:
                 p.info(f"Trigger: {trigger['name']}", indent=2)
 
-        # Example 5: List files with type-safe access
+        # Example 5: List files in a stage (fluent API)
         p.section(5, 5, "Listing files in a stage")
 
         if stages:
             stage_id = stages[0]["stageId"]
-            files_response = await client.v1.files.list(stage_id=stage_id, page=0, size=50)
+            files_response = await client.v1.stages(stage_id).files.list(page=0, size=50)
 
             p.success(f"Found {files_response['total']} files")
 
