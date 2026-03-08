@@ -131,6 +131,31 @@ file_content = await client.v1.stages("stage-id").files("file-id").get()
 presigned    = await client.v1.stages("stage-id").files("file-id").presigned_url(ttl=3600)
 ```
 
+## File Upload
+
+Upload files to stages via multipart/form-data:
+
+```python
+client = Client()
+stage = await client.v1.stages.create(name="My Stage")
+sid = stage["stageId"]
+
+# Upload raw bytes
+uploaded = await client.v1.stages(sid).files.upload(
+    source_data=b'{"key": "value"}\n',
+    filename="data.jsonl",
+    media_type="application/x-ndjson",
+    name="my-data-file",
+    metadata={"source": "pipeline"},
+)
+
+# Download it back
+content = await client.v1.stages(sid).files(uploaded["fileId"]).get()
+
+# Get a presigned URL
+purl = await client.v1.stages(sid).files(uploaded["fileId"]).presigned_url(ttl=3600)
+```
+
 ## Creating Stages with Embeddings
 
 The SDK provides specialized helpers for each embedding strategy:
