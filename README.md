@@ -200,7 +200,7 @@ meta    = await client.v1.search_stores(ssid).documents("my-doc").get()
 content = await client.v1.search_stores(ssid).documents("my-doc").get_content()  # list[ContentDTO]
 
 # Search
-results = await client.v1.search_stores(ssid).search(query="hello", limit=5)
+results = await client.v1.search_stores(ssid).search(query="hello", max_results=5)
 
 # List, filter, batch
 docs = await client.v1.search_stores(ssid).documents.list(page=1, size=10, starts_with="my")
@@ -226,6 +226,51 @@ ss = await client.v1.search_stores.instruct.create(
 ss = await client.v1.search_stores.vllm.create(
     name="VLLM Store",
     embedding_model="qwen3-embedding-8b",
+)
+```
+
+### Search Filters (Filter DSL)
+
+The SDK provides a Pythonic filter builder using operator overloading:
+
+```python
+from pharia import Filter, And, Or, Not, ModalityCondition
+from datetime import datetime
+
+# Metadata comparisons
+Filter("category") == "science"          # equalTo
+Filter("category") == None               # isNull
+Filter("priority") > 5                   # greaterThan
+Filter("priority") >= 5                  # greaterThanOrEqualTo
+Filter("priority") < 10                  # lessThan
+Filter("priority") <= 10                 # lessThanOrEqualTo
+
+# Datetime comparisons (auto-detected)
+Filter("created") > datetime(2024, 1, 1) # after
+Filter("created") <= datetime(2024, 12, 31) # atOrBefore
+
+# Modality filters
+ModalityCondition.text()                 # {"modality": "text"}
+ModalityCondition.image()                # {"modality": "image"}
+
+# Combine with And / Or / Not
+results = await client.v1.search_stores(ssid).search(
+    query="machine learning",
+    max_results=10,
+    filters=[
+        And(Filter("category") == "science", ModalityCondition.text()),
+        Not(Filter("archived") == None),
+    ],
+)
+```
+
+Raw camelCase dicts are also accepted for backward compatibility:
+
+```python
+results = await client.v1.search_stores(ssid).search(
+    query="hello",
+    max_results=5,
+    filters=[{"with": [{"metadata": {"field": "category", "equalTo": "science"}}]}],
 )
 ```
 

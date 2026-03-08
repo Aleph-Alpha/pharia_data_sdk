@@ -11,8 +11,6 @@ from typing import Literal
 from typing import NotRequired
 from typing import TypedDict
 
-from pharia.utils import convert_keys_to_camel_case
-
 
 # =============================================================================
 # Enums
@@ -1051,23 +1049,29 @@ class SearchInput(TypedDict):
     """Input for search (uses snake_case)."""
 
     query: str
-    limit: int
-    search_type: NotRequired[str | None]
+    max_results: int
     min_score: NotRequired[float | None]
-    filters: NotRequired[list[SearchFilter] | None]
+    filters: NotRequired[list[dict[str, Any]] | None]
 
 
 def search_input_to_api(data: SearchInput) -> dict[str, Any]:
-    """Convert SearchInput (snake_case) to API format (camelCase)."""
+    """Convert SearchInput (snake_case) to document-index API format.
+
+    The v1 endpoint is a reverse proxy to document-index, which expects:
+    - ``query`` as ``[{"modality": "text", "text": "..."}]``
+    - ``maxResults`` (not ``limit``)
+    - ``filters`` already in camelCase
+    """
     return {
-        "query": data["query"],
-        "limit": data["limit"],
-        **({} if "search_type" not in data else {"searchType": data["search_type"]}),
-        **({} if "min_score" not in data else {"minScore": data["min_score"]}),
+        "query": [{"modality": "text", "text": data["query"]}],
+        "maxResults": data["max_results"],
         **(
             {}
-            if "filters" not in data or data["filters"] is None
-            else {"filters": [convert_keys_to_camel_case(dict(f)) for f in data["filters"]]}
+            if "min_score" not in data or data["min_score"] is None
+            else {"minScore": data["min_score"]}
+        ),
+        **(
+            {} if "filters" not in data or data["filters"] is None else {"filters": data["filters"]}
         ),
     }
 

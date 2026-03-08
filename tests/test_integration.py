@@ -17,7 +17,9 @@ import uuid
 import httpx
 import pytest
 
+from pharia import And
 from pharia import Client
+from pharia import Filter
 from pharia.models import MediaType
 
 
@@ -609,12 +611,62 @@ class TestSearchStores:
         for store in stores:
             ssid = store["id"]
             try:
-                result = await client.v1.search_stores(ssid).search(query="test", limit=3)
-                assert "results" in result
+                result = await client.v1.search_stores(ssid).search(query="test", max_results=3)
+                assert isinstance(result, list)
                 return
             except Exception:
                 continue
         pytest.skip("No search store returned results")
+
+    @pytest.mark.asyncio
+    async def test_search_with_metadata_filter(self):
+        """Upload a document with metadata, then recover it using a filter."""
+        client = Client()
+        ss = await client.v1.search_stores.vllm.create(
+            name=unique("filter-ss"),
+            embedding_model="qwen3-embedding-8b",
+            max_chunk_size_tokens=512,
+            chunk_overlap_tokens=128,
+            metadata_schema={"category": "string"},
+        )
+        ssid = ss["id"]
+        try:
+            doc_name = unique("filter-doc")
+            await (
+                client.v1.search_stores(ssid)
+                .documents(doc_name)
+                .create_or_update(
+                    schema_version="V1",
+                    contents=[
+                        {
+                            "modality": "text",
+                            "text": "Machine learning is a subset of artificial intelligence.",
+                        }
+                    ],
+                    metadata={"category": "science"},
+                )
+            )
+
+            # Matching filter — should find the document
+            result = await client.v1.search_stores(ssid).search(
+                query="artificial intelligence",
+                max_results=5,
+                filters=[And(Filter("category") == "science")],
+            )
+            assert isinstance(result, list)
+
+            # Non-matching filter — should return nothing
+            result_empty = await client.v1.search_stores(ssid).search(
+                query="artificial intelligence",
+                max_results=5,
+                filters=[And(Filter("category") == "sports")],
+            )
+            assert isinstance(result_empty, list)
+            assert len(result_empty) == 0
+
+            await client.v1.search_stores(ssid).documents(doc_name).delete()
+        finally:
+            await client.v1.search_stores(ssid).delete()
 
 
 class TestDocuments:
@@ -740,9 +792,9 @@ class TestDocuments:
             # Search may fail on freshly created stores (embeddings not indexed yet)
             try:
                 result = await client.v1.search_stores(ssid).search(
-                    query="artificial intelligence", limit=5
+                    query="artificial intelligence", max_results=5
                 )
-                assert "results" in result
+                assert isinstance(result, list)
             except httpx.HTTPStatusError:
                 pass  # expected on freshly created stores
 

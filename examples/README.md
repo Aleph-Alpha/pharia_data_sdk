@@ -46,6 +46,21 @@ python create_stages.py
 
 ---
 
+### 🔍 Search Stores
+**File:** `search_stores_usage.py`
+
+Full search store lifecycle including the Filter DSL:
+- Create search stores (semantic, instruct)
+- Add documents and search with metadata filters
+- Use `Filter`, `And`, `Or`, `Not`, and `ModalityCondition` for Pythonic queries
+
+```bash
+cd pharia/examples
+python search_stores_usage.py
+```
+
+---
+
 ### 🛡️ Type-Safe Usage
 **File:** `typed_usage.py`
 

@@ -22,6 +22,11 @@ For more examples, see the examples/ directory.
 """
 
 from pharia.client import Client
+from pharia.filters import And
+from pharia.filters import Filter
+from pharia.filters import ModalityCondition
+from pharia.filters import Not
+from pharia.filters import Or
 from pharia.models import ChunkingStrategy
 from pharia.models import Connector
 from pharia.models import ConnectorFile
@@ -104,15 +109,13 @@ from pharia.models import update_stage_to_api
 
 
 __all__ = [
+    "And",
     "ChunkingStrategy",
-    # Client
     "Client",
-    # Connector types
     "Connector",
     "ConnectorFile",
     "ConnectorFilesListResponse",
     "ConnectorListResponse",
-    # Enums
     "ConnectorType",
     "ContentDTO",
     "CreateConnectorInput",
@@ -125,30 +128,30 @@ __all__ = [
     "Cursor",
     "DataObjectDTO",
     "DataStorage",
-    # Dataset types
     "Dataset",
     "DatasetListResponse",
     "DestinationConfig",
     "DestinationType",
-    # Document types
     "Document",
     "DocumentContentResponse",
     "DocumentListResponse",
     "DocumentSection",
     "DocumentWithContents",
-    # Other types
     "Download",
     "EmbeddingStrategy",
     "EmbeddingStrategyInstructConfig",
     "EmbeddingStrategySemanticConfig",
     "EmbeddingStrategyVLLMConfig",
-    # File types
     "File",
     "FileListResponse",
+    "Filter",
     "GoogleDriveSourceConfig",
     "IngestionContext",
     "MediaType",
     "Modality",
+    "ModalityCondition",
+    "Not",
+    "Or",
     "PaginationBase",
     "Parameter",
     "PresignedURL",
@@ -156,31 +159,25 @@ __all__ = [
     "QueryEngineCommandResult",
     "QueryEngineDatabaseFile",
     "QueryEngineQueryResult",
-    # Query Engine types
     "QueryEngineSession",
-    # Repository types
     "Repository",
     "RepositoryListResponse",
     "RetentionPolicy",
     "Run",
     "RunListResponse",
     "SchemaVersion",
-    # Search types
     "SearchInput",
     "SearchResponse",
     "SearchResult",
-    # Search Store types
     "SearchStore",
     "SearchStoreListResponse",
     "SharepointSourceConfig",
     "SourceConfig",
-    # Stage types
     "Stage",
     "StageChunkingStrategy",
     "StageEmbeddingStrategy",
     "StageListResponse",
     "StageSearchStoreContext",
-    # Transformation & Run types
     "Transformation",
     "TransformationContext",
     "TransformationName",

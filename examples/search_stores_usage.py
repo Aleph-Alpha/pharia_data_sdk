@@ -7,6 +7,7 @@ This example demonstrates search store operations using the v1 API:
 - Listing search stores
 - Getting a specific search store
 - Updating search store metadata
+- Searching with the Filter DSL
 - Deleting a search store
 """
 
@@ -14,7 +15,10 @@ import asyncio
 import uuid
 
 from examples.helpers import ExamplePrinter
+from pharia import And
 from pharia import Client
+from pharia import Filter
+from pharia import ModalityCondition
 
 
 async def main():
@@ -95,8 +99,38 @@ async def main():
             {"Metadata keys": list(updated_store.get("metadata", {}).keys())},
         )
 
-        # Example 6: Delete the search stores (fluent API)
-        p.section(6, 6, "Deleting search stores")
+        # Example 6: Search with Filter DSL
+        p.section(6, 7, "Searching with Filter DSL")
+
+        # Add a document so there's something to search
+        doc_name = f"test-doc-{uuid.uuid4().hex[:8]}"
+        await (
+            client.v1.search_stores(semantic_store_id)
+            .documents(doc_name)
+            .create_or_update(
+                schema_version="V1",
+                contents=[{"modality": "text", "text": "Machine learning is a subset of AI."}],
+                metadata={"category": "science"},
+            )
+        )
+        p.info(f"Created document: {doc_name}", indent=1)
+
+        # Search using the Filter DSL
+        search_result = await client.v1.search_stores(semantic_store_id).search(
+            query="artificial intelligence",
+            max_results=5,
+            filters=[And(Filter("category") == "science", ModalityCondition.text())],
+        )
+        p.success(
+            f"Search returned {len(search_result)} results",
+            {"Query": "artificial intelligence", "Filter": 'category == "science"'},
+        )
+
+        # Clean up document
+        await client.v1.search_stores(semantic_store_id).documents(doc_name).delete()
+
+        # Example 7: Delete the search stores (fluent API)
+        p.section(7, 7, "Deleting search stores")
         await client.v1.search_stores(semantic_store_id).delete()
         p.success(f"Deleted semantic search store: {semantic_store_id}")
 

@@ -4,11 +4,13 @@ from typing import Any
 from typing import Unpack
 from typing import overload
 
+from pharia.filters import Condition
+from pharia.filters import FilterGroup
+from pharia.filters import resolve_filters
 from pharia.models import CreateSearchStoreInput
 from pharia.models import EmbeddingStrategyVLLMConfig
 from pharia.models import RetentionPolicy
-from pharia.models import SearchFilter
-from pharia.models import SearchResponse
+from pharia.models import SearchResult
 from pharia.models import SearchStore
 from pharia.models import SearchStoreListResponse
 from pharia.models import UpdateSearchStoreInput
@@ -54,19 +56,26 @@ class SearchStoreResource:
     async def search(
         self,
         query: str,
-        limit: int = 10,
-        search_type: str | None = None,
+        max_results: int = 10,
         min_score: float | None = None,
-        filters: list[SearchFilter] | None = None,
-    ) -> SearchResponse:
-        """Search this search store."""
+        filters: list[FilterGroup | Condition | dict[str, Any]] | None = None,
+    ) -> list[SearchResult]:
+        """Search this search store.
+
+        Args:
+            query: Text query to search for.
+            max_results: Maximum number of results to return.
+            min_score: Minimum relevance score threshold.
+            filters: Search filters — accepts builder DSL objects
+                (``And(...)``, ``Or(...)``, ``Not(...)``) or raw camelCase dicts.
+        """
+        resolved = resolve_filters(filters)
         payload = search_input_to_api(
             {
                 "query": query,
-                "limit": limit,
-                **({} if search_type is None else {"search_type": search_type}),
+                "max_results": max_results,
                 **({} if min_score is None else {"min_score": min_score}),
-                **({} if filters is None else {"filters": filters}),
+                **({} if resolved is None else {"filters": resolved}),
             }
         )
         return await self.client.request(
@@ -198,6 +207,7 @@ class VLLMSearchStores:
         instruction_query: str | None = None,
         hybrid_index: str | None = None,
         metadata: dict[str, Any] | None = None,
+        metadata_schema: dict[str, str] | None = None,
         retention_policy: RetentionPolicy | None = None,
     ) -> SearchStore:
         """Create a search store with VLLM embedding."""
@@ -226,6 +236,7 @@ class VLLMSearchStores:
                 "chunkOverlapTokens": chunk_overlap_tokens,
             },
             **({} if metadata is None else {"metadata": metadata}),
+            **({} if metadata_schema is None else {"metadata_schema": metadata_schema}),
             **({} if retention_policy is None else {"retention_policy": retention_policy}),
         }
         payload = create_search_store_to_api(search_store_input)
