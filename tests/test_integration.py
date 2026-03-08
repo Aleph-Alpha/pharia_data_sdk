@@ -176,19 +176,14 @@ class TestStageRuns:
     @pytest.mark.asyncio
     async def test_list_runs(self):
         client = Client()
-        stages = await client.v1.stages.list(page=0, size=10)
-        if not stages["stages"]:
-            pytest.skip("No stages available to test runs")
-        for stage in stages["stages"]:
-            sid = stage["stageId"]
-            try:
-                runs = await client.v1.stages(sid).runs.list(page=0, size=5)
-                assert "total" in runs
-                assert "runs" in runs
-                return
-            except httpx.HTTPStatusError:
-                continue
-        pytest.skip("No stages with runs endpoint available")
+        stage = await client.v1.stages.create(name=unique("runs-list"))
+        sid = stage["stageId"]
+        try:
+            runs = await client.v1.stages(sid).runs.list(page=0, size=5)
+            assert "total" in runs
+            assert "runs" in runs
+        finally:
+            await client.v1.stages(sid).delete()
 
 
 # ---------------------------------------------------------------------------
@@ -200,23 +195,25 @@ class TestStageFiles:
     @pytest.mark.asyncio
     async def test_list_files(self):
         client = Client()
-        stages = await client.v1.stages.list(page=0, size=1)
-        if not stages["stages"]:
-            pytest.skip("No stages available to test files")
-        sid = stages["stages"][0]["stageId"]
-        files = await client.v1.stages(sid).files.list(page=0, size=5)
-        assert "total" in files
-        assert "files" in files
+        stage = await client.v1.stages.create(name=unique("files-list"))
+        sid = stage["stageId"]
+        try:
+            files = await client.v1.stages(sid).files.list(page=0, size=5)
+            assert "total" in files
+            assert "files" in files
+        finally:
+            await client.v1.stages(sid).delete()
 
     @pytest.mark.asyncio
     async def test_list_files_with_name_filter(self):
         client = Client()
-        stages = await client.v1.stages.list(page=0, size=1)
-        if not stages["stages"]:
-            pytest.skip("No stages available")
-        sid = stages["stages"][0]["stageId"]
-        files = await client.v1.stages(sid).files.list(page=0, size=5, name="nonexistent")
-        assert "total" in files
+        stage = await client.v1.stages.create(name=unique("files-filter"))
+        sid = stage["stageId"]
+        try:
+            files = await client.v1.stages(sid).files.list(page=0, size=5, name="nonexistent")
+            assert "total" in files
+        finally:
+            await client.v1.stages(sid).delete()
 
     @pytest.mark.asyncio
     async def test_get_file_content(self):
