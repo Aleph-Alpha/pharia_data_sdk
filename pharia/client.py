@@ -108,6 +108,31 @@ class Client:
 
             return response.json()
 
+    async def request_multipart(
+        self,
+        method: str,
+        path: str,
+        files: dict[str, Any] | None = None,
+        data: dict[str, Any] | None = None,
+        timeout: float = 0.0,
+    ) -> Any:
+        """Make a multipart/form-data HTTP request to the API."""
+        url = f"{self.base_url}{path}"
+        request_headers = dict(self.headers)
+        timeout_value = timeout or self.timeout or 30.0
+
+        async with httpx.AsyncClient(timeout=timeout_value) as client:
+            response = await client.request(
+                method=method, url=url, files=files, data=data, headers=request_headers
+            )
+
+            response.raise_for_status()
+
+            if response.status_code == 204 or not response.content:
+                return None
+
+            return response.json()
+
     async def request_raw(
         self,
         method: str,

@@ -217,32 +217,37 @@ class TestStageFiles:
 
     @pytest.mark.asyncio
     async def test_get_file_content(self):
-        """Download first available file (if any)."""
+        """Upload a file, download it, verify bytes match."""
         client = Client()
-        stages = await client.v1.stages.list(page=0, size=5)
-        for s in stages.get("stages", []):
-            files = await client.v1.stages(s["stageId"]).files.list(page=0, size=1)
-            if files.get("files"):
-                fid = files["files"][0]["fileId"]
-                content = await client.v1.stages(s["stageId"]).files(fid).get()
-                assert isinstance(content, bytes)
-                return
-        pytest.skip("No files found in any stage")
+        stage = await client.v1.stages.create(name=unique("file-get"))
+        sid = stage["stageId"]
+        try:
+            payload = b'{"hello": "world"}\n'
+            uploaded = await client.v1.stages(sid).files.upload(
+                source_data=payload, filename="test.jsonl", media_type="application/x-ndjson"
+            )
+            fid = uploaded["fileId"]
+            content = await client.v1.stages(sid).files(fid).get()
+            assert isinstance(content, bytes)
+            assert content == payload
+        finally:
+            await client.v1.stages(sid).delete()
 
     @pytest.mark.asyncio
     async def test_presigned_url(self):
-        """Get presigned URL for first available file."""
+        """Upload a file, get its presigned URL."""
         client = Client()
-        stages = await client.v1.stages.list(page=0, size=5)
-        for s in stages.get("stages", []):
-            files = await client.v1.stages(s["stageId"]).files.list(page=0, size=1)
-            if files.get("files"):
-                fid = files["files"][0]["fileId"]
-                purl = await client.v1.stages(s["stageId"]).files(fid).presigned_url(ttl=60)
-                # API returns {success, presignedUrl, ttlSeconds}
-                assert purl.get("presignedUrl") or purl.get("url")
-                return
-        pytest.skip("No files found in any stage")
+        stage = await client.v1.stages.create(name=unique("file-presign"))
+        sid = stage["stageId"]
+        try:
+            uploaded = await client.v1.stages(sid).files.upload(
+                source_data=b"test content", filename="test.txt", media_type="text/plain"
+            )
+            fid = uploaded["fileId"]
+            purl = await client.v1.stages(sid).files(fid).presigned_url(ttl=60)
+            assert purl.get("presignedUrl") or purl.get("url")
+        finally:
+            await client.v1.stages(sid).delete()
 
 
 class TestRepositories:

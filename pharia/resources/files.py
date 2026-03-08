@@ -1,5 +1,7 @@
+import json
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
+from typing import Any
 from typing import overload
 
 from pharia.models import File
@@ -106,9 +108,31 @@ class StageFiles:
         }
         return await self.client.request("GET", f"/stages/{self.stage_id}/files", params=params)
 
-    async def create(self, file_data: dict) -> File:
-        """Upload a file to this stage."""
-        return await self.client.request("POST", f"/stages/{self.stage_id}/files", json=file_data)
+    async def upload(
+        self,
+        source_data: bytes,
+        filename: str = "upload",
+        media_type: str = "application/octet-stream",
+        name: str | None = None,
+        metadata: dict[str, Any] | None = None,
+    ) -> File:
+        """Upload a file to this stage via multipart/form-data.
+
+        Args:
+            source_data: Raw file content bytes.
+            filename: Filename for the multipart part.
+            media_type: MIME type of the file.
+            name: Optional friendly name for the file.
+            metadata: Optional metadata key-value pairs.
+        """
+        files = {"sourceData": (filename, source_data, media_type)}
+        data = {
+            **({} if name is None else {"name": name}),
+            **({} if metadata is None else {"metadata": json.dumps(metadata)}),
+        }
+        return await self.client.request_multipart(
+            "POST", f"/stages/{self.stage_id}/files", files=files, data=data
+        )
 
 
 @dataclass
