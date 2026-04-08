@@ -44,7 +44,7 @@ class Client:
         self.base_url = self.base_url or os.getenv("PHARIA_DATA_API_BASE_URL", "")
         self.api_key = self.api_key or os.getenv("PHARIA_API_KEY", "")
         if not self.base_url:
-            raise ValueError("Either pass a base_url paramater or set $PHARIA_DATA_API_BASE_URL!")
+            raise ValueError("Either pass a base_url parameter or set $PHARIA_DATA_API_BASE_URL!")
         if not self.api_key:
             raise ValueError("Either pass an api_key parameter or set $PHARIA_API_KEY")
         self.base_url = self.base_url.rstrip("/")
